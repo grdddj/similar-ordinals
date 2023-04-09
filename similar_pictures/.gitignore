@@ -1,1 +1,3 @@
 /target
+!target/release/similar_pictures
+!target/release/libsimilar_pictures.so

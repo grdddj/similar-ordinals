@@ -12,7 +12,7 @@ class Match(TypedDict):
 
 
 # Load the shared library
-lib = ctypes.cdll.LoadLibrary("similar_pictures/libsimilar_pictures.so")
+lib = ctypes.cdll.LoadLibrary("similar_pictures/target/release/libsimilar_pictures.so")
 
 # Define the return type and argument types for the Rust function
 lib.get_matches_c.argtypes = [c_char_p, c_char_p]
