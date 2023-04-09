@@ -4,7 +4,8 @@ import json
 import time
 from pathlib import Path
 
-from average_hash_json import db_file, image_to_hash_bin_str
+from average_hash_json import image_to_hash_bin_str
+from common import db_file
 
 HERE = Path(__file__).parent
 

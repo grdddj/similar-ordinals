@@ -5,10 +5,7 @@ import json
 import imagehash
 from PIL import Image
 
-from common import image_paths
-
-hash_size = 16
-db_file = "average_hash_db.json"
+from common import db_file, hash_size, image_paths
 
 
 def image_to_hash_bin_str(image_path: str) -> str:
