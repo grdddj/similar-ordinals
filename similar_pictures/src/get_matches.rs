@@ -10,16 +10,30 @@ struct MatchItem {
 }
 
 
-pub fn get_matches(file_path: &str, file_hash: &str) -> String {
+pub fn get_matches(file_path: &str, ord_id: Option<&str>, file_hash: Option<&str>) -> String {
     let mut file = File::open(file_path).expect("Unable to open the file");
     let mut content = String::new();
     file.read_to_string(&mut content)
         .expect("Unable to read the file content");
 
-    let data: Value = serde_json::from_str(&content).expect("Unable to parse JSON");
+    let json_data: Value = serde_json::from_str(&content).expect("Unable to parse JSON");
+    let json_data_clone = json_data.clone();
+
+    // If ord ID is provided, use it, otherwise use the file hash
+    let file_hash = if let Some(ord_id) = ord_id {
+        if let Some(value) = json_data_clone.get(ord_id) {
+            value.as_str().expect("Unable to parse JSON")
+        } else {
+            panic!("Ord ID {} was not found in the JSON data", ord_id);
+        }
+    } else if let Some(file_hash) = file_hash {
+        file_hash
+    } else {
+        panic!("No ord ID or file hash provided");
+    };
 
     let mut matches: Vec<MatchItem> = Vec::new();
-    if let Value::Object(data_map) = data {
+    if let Value::Object(data_map) = json_data {
         for (ord_id, hash_value) in data_map {
             if let Value::String(hash) = hash_value {
                 let match_sum = file_hash

@@ -5,11 +5,15 @@ mod get_matches;
 use get_matches::get_matches;
 
 #[no_mangle]
-pub unsafe extern "C" fn get_matches_c(file_path: *const c_char, file_hash: *const c_char) -> *mut c_char {
-    let file_path = unsafe { CStr::from_ptr(file_path).to_str().expect("Invalid file path string") };
+pub unsafe extern "C" fn get_matches_c(json_file: *const c_char, ord_id: *const c_char, file_hash: *const c_char) -> *mut c_char {
+    let json_file = unsafe { CStr::from_ptr(json_file).to_str().expect("Invalid json file string") };
+    let ord_id = unsafe { CStr::from_ptr(ord_id).to_str().expect("Invalid ord ID string") };
     let file_hash = unsafe { CStr::from_ptr(file_hash).to_str().expect("Invalid file hash string") };
 
-    let json_output = get_matches(file_path, file_hash);
+    let ord_id = if ord_id.is_empty() { None } else { Some(ord_id) };
+    let file_hash = if file_hash.is_empty() { None } else { Some(file_hash) };
+
+    let json_output = get_matches(json_file, ord_id, file_hash);
     let c_string = CString::new(json_output).unwrap();
     c_string.into_raw()
 }
