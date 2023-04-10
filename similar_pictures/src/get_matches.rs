@@ -3,6 +3,8 @@ use serde_json::Value;
 use std::fs::File;
 use std::io::Read;
 
+use rayon::prelude::*;
+
 #[derive(Serialize)]
 struct MatchItem {
     ord_id: String,
@@ -34,16 +36,29 @@ pub fn get_matches(file_path: &str, ord_id: Option<&str>, file_hash: Option<&str
 
     let mut matches: Vec<MatchItem> = Vec::new();
     if let Value::Object(data_map) = json_data {
-        for (ord_id, hash_value) in data_map {
-            if let Value::String(hash) = hash_value {
-                let match_sum = file_hash
-                    .chars()
-                    .zip(hash.chars())
-                    .filter(|(c1, c2)| c1 == c2)
-                    .count();
-                matches.push(MatchItem { ord_id, match_sum });
-            }
-        }
+        let data_map: Vec<_> = data_map.into_iter().collect();
+
+        // Process the JSON data in parallel
+        let matches_par: Vec<_> = data_map
+            .par_iter()
+            .filter_map(|(ord_id, hash_value)| {
+                if let Value::String(hash) = hash_value {
+                    let match_sum = file_hash
+                        .chars()
+                        .zip(hash.chars())
+                        .filter(|(c1, c2)| c1 == c2)
+                        .count();
+                    Some(MatchItem {
+                        ord_id: ord_id.clone(),
+                        match_sum,
+                    })
+                } else {
+                    None
+                }
+            })
+            .collect();
+
+        matches = matches_par;
     }
 
     matches.sort_by(|a, b| b.match_sum.cmp(&a.match_sum));
