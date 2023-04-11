@@ -1,5 +1,6 @@
 *.npy
 *.json
+!example_db.json
 __pycache__
 images
 *.txt

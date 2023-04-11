@@ -47,7 +47,6 @@ def main(
 ) -> None:
     if custom_file is not None:
         file_hash = image_to_hash_bin_str(custom_file)
-        print("file_hash", file_hash)
     matches = get_matches(json_file, ord_id, file_hash, top_n)
     for match in matches:
         print(match)
