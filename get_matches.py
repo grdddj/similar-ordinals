@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Optional
 
-import click
+import typer
 
 from common import Match, db_file, path_to_hash
 
@@ -32,18 +33,18 @@ def get_matches(
     ]
 
 
-@click.command()
-@click.option("-j", "--json-file", type=click.Path(exists=True), default=db_file)
-@click.option("-c", "--custom-file", type=click.Path(exists=True), default=None)
-@click.option("-o", "--ord-id", default=None)
-@click.option("-f", "--file-hash", default=None)
-@click.option("-n", "--top-n", type=int, default=20)
 def main(
-    json_file: Path,
-    custom_file: Path,
-    ord_id: str | None,
-    file_hash: str | None,
-    top_n: int,
+    json_file: Path = typer.Option(
+        db_file, "-j", "--json-file", exists=True, help="JSON DB file"
+    ),
+    custom_file: Optional[Path] = typer.Option(
+        None, "-c", "--custom-file", exists=True, help="Custom file"
+    ),
+    ord_id: Optional[str] = typer.Option(None, "-o", "--ord-id", help="Ordinal ID"),
+    file_hash: Optional[str] = typer.Option(
+        None, "-f", "--file-hash", help="Hash of the file"
+    ),
+    top_n: int = typer.Option(20, "-n", "--top-n", help="Number of matches to return"),
 ) -> None:
     if custom_file is not None:
         file_hash = path_to_hash(custom_file)
@@ -53,4 +54,4 @@ def main(
 
 
 if __name__ == "__main__":
-    main()
+    typer.run(main)
