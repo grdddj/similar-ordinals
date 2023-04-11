@@ -7,7 +7,7 @@ use get_matches::{get_matches, index_all_pictures};
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Args {
-    /// Location od JSON DB file
+    /// Location of JSON DB file
     #[arg(short, long)]
     path_to_json: String,
 

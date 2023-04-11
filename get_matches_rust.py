@@ -7,7 +7,7 @@ from pathlib import Path
 
 import click
 
-from common import Match, db_file, image_to_hash_bin_str
+from common import Match, db_file, path_to_hash
 
 # Load the shared Rust library
 rust_lib = ctypes.cdll.LoadLibrary(
@@ -47,7 +47,7 @@ def main(
     top_n: int,
 ) -> None:
     if custom_file is not None:
-        file_hash = image_to_hash_bin_str(custom_file)
+        file_hash = path_to_hash(custom_file)
     matches = get_matches(json_file, ord_id, file_hash, top_n)
     for match in matches:
         print(match)

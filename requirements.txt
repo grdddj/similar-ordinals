@@ -1,3 +1,5 @@
 Pillow
 imagehash
 click
+fastapi
+python-multipart
