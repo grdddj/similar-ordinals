@@ -1,7 +1,7 @@
 *.npy
 *.db
 *.json
-!example_db.json
+!average_hash_example.json
 __pycache__
 images
 *.log
