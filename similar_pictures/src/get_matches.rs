@@ -31,7 +31,7 @@ pub fn get_matches(file_path: String, ord_id: Option<String>, file_hash: Option<
         if let Some(value) = json_data_clone.get(ord_id.clone()) {
             value.as_str().expect("Unable to parse JSON").to_string()
         } else {
-            panic!("Ord ID {} was not found in the JSON data", ord_id);
+            return "[]".to_string();
         }
     } else if let Some(file_hash) = file_hash {
         file_hash
