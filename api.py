@@ -9,6 +9,7 @@ from get_matches_rust import get_matches
 
 app = FastAPI()
 
+
 # curl http://localhost:8000/ord_id/123?top_n=10
 @app.get("/ord_id/{ord_id}")
 async def by_ord_id(ord_id: int, top_n: int = Query(20)):

@@ -1,8 +1,10 @@
 *.npy
+*.db
 *.json
 !example_db.json
 __pycache__
 images
+*.log
 *.txt
 !requirements.txt
 nohup.out

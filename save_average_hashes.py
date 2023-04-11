@@ -1,21 +1,54 @@
 from __future__ import annotations
 
 import json
+import logging
+from pathlib import Path
 
-from common import db_file, image_paths, path_to_hash
+import imagehash
+from PIL import Image
+
+from common import bytes_to_hash
+from db_data import get_all_image_inscriptions_iter
+from db_files import get_data
+
+HERE = Path(__file__).parent
+
+log_file_path = HERE / "avg_hash.log"
+logging.basicConfig(
+    filename=log_file_path,
+    level=logging.INFO,
+    format="%(asctime)s %(message)s",
+)
+
+hash_size = 16
+db_file = f"average_hash_db_{hash_size}.json"
 
 
-def save_average_hashes(files: list[str]) -> None:
-    avg_hashes: dict[str, str] = {}
-    for img_path in files:
-        img_hash_bin_string = path_to_hash(img_path)
-        file_name = img_path.split("/")[-1]
-        print("file_name", file_name)
-        avg_hashes[file_name] = img_hash_bin_string
-
-    with open(db_file, "w") as f:
-        json.dump(avg_hashes, f, indent=4)
+def image_to_hash_bin_str(img: Image.Image) -> str:
+    bool_array = imagehash.average_hash(img, hash_size).hash
+    int_array = bool_array.flatten().astype(int)
+    binary_string = "".join(map(str, int_array))
+    return binary_string
 
 
 if __name__ == "__main__":
-    save_average_hashes(image_paths)
+    avg_hashes: dict[int, str] = {}
+    try:
+        index = 0
+        for incsr in get_all_image_inscriptions_iter():
+            index += 1
+            if index % 100 == 0:
+                logging.info(f"index {index}")
+
+            try:
+                data = get_data(incsr.tx_id)  # type: ignore
+                if data is not None:
+                    avg_hashes[incsr.id] = bytes_to_hash(data)
+            except Exception as e:
+                logging.error(f"ERROR: {incsr} - {e}")
+                continue
+    except KeyboardInterrupt:
+        pass
+    finally:
+        with open(db_file, "w") as f:
+            json.dump(avg_hashes, f, indent=4)

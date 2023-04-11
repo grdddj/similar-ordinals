@@ -1,4 +1,10 @@
 Pillow
 imagehash
+fastapi
+uvicorn
 python-multipart
+sqlmodel
 typer
+black
+isort
+flake8
