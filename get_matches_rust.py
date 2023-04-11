@@ -2,74 +2,56 @@ from __future__ import annotations
 
 import ctypes
 import json
-import threading
-import time
-from ctypes import c_char_p
-from typing import TypedDict
+from ctypes import c_char_p, c_int
+from pathlib import Path
 
+import click
 
-class Match(TypedDict):
-    ord_id: str
-    match_sum: int
+from common import Match, db_file, image_to_hash_bin_str
 
-
-# Load the shared library
-lib = ctypes.cdll.LoadLibrary("similar_pictures/target/release/libsimilar_pictures.so")
+# Load the shared Rust library
+rust_lib = ctypes.cdll.LoadLibrary(
+    "similar_pictures/target/release/libsimilar_pictures.so"
+)
 
 # Define the return type and argument types for the Rust function
-lib.get_matches_c.argtypes = [c_char_p, c_char_p, c_char_p]
-lib.get_matches_c.restype = c_char_p
+rust_lib.get_matches_c.argtypes = [c_char_p, c_char_p, c_char_p, c_int]
+rust_lib.get_matches_c.restype = c_char_p
 
 
 # Call the Rust function
-def get_matches_rust(json_file: str, ord_id: str, file_hash: str) -> str:
-    return lib.get_matches_c(
-        json_file.encode(), ord_id.encode(), file_hash.encode()
+def get_matches_rust(json_file: str, ord_id: str, file_hash: str, top_n: int) -> str:
+    return rust_lib.get_matches_c(
+        json_file.encode(), ord_id.encode(), file_hash.encode(), top_n
     ).decode()
 
 
-def get_matches(json_file: str, ord_id: str, file_hash: str) -> list[Match]:
-    rust_matches = get_matches_rust(json_file, ord_id, file_hash)
+def get_matches(
+    json_file: str | Path, ord_id: str, file_hash: str, top_n: int
+) -> list[Match]:
+    rust_matches = get_matches_rust(str(json_file), ord_id, file_hash, top_n)
     return json.loads(rust_matches)
 
 
-def save_match(ord_id: str, matches: list[Match]) -> None:
-    with open("matches.txt", "a") as f:
-        f.write(f"{ord_id}: {matches}\n")
+@click.command()
+@click.option("-j", "--json-file", type=click.Path(exists=True), default=db_file)
+@click.option("-c", "--custom-file", type=click.Path(exists=True), default=None)
+@click.option("-o", "--ord-id", default="")
+@click.option("-f", "--file-hash", default="")
+@click.option("-n", "--top-n", type=int, default=20)
+def main(
+    json_file: Path,
+    custom_file: Path,
+    ord_id: str,
+    file_hash: str,
+    top_n: int,
+) -> None:
+    if custom_file is not None:
+        file_hash = image_to_hash_bin_str(custom_file)
+    matches = get_matches(json_file, ord_id, file_hash, top_n)
+    for match in matches:
+        print(match)
 
 
 if __name__ == "__main__":
-    json_file = "average_hash_db_16.json"
-    ord_id = "6666"
-    file_hash = "0000000000000000000000000001110000000000001111100111010000111110011111110111111001111111000011100000000000001100000000000000100000000000000000000111111111111110001100010000000000000000000011100001111110010000001110111110000000111111111000000000000000000000"
-
-    # matches = get_matches(json_file, ord_id, file_hash)
-    # print(matches)
-
-    # for ord_id, file_hash in db.items():
-    #     print("ord_id", ord_id)
-    #     matches = get_matches(json_file, ord_id, file_hash)
-    #     print(matches)
-    #     save_match(ord_id, matches)
-
-    with open(json_file) as f:
-        db = json.load(f)
-
-    items = iter(db.items())
-
-    def analyze():
-        while True:
-            try:
-                item = next(items)
-                ord_id, file_hash = item
-                matches = get_matches(json_file, ord_id, file_hash)
-                print(ord_id)
-                save_match(ord_id, matches)
-            except StopIteration:
-                break
-
-    no_of_threads = 4
-    for _ in range(no_of_threads):
-        new_thread = threading.Thread(target=analyze)
-        new_thread.start()
-        time.sleep(0.5)
+    main()
