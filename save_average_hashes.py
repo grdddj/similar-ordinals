@@ -5,10 +5,10 @@ import logging
 from pathlib import Path
 
 import imagehash
+from db_data import get_all_image_inscriptions_iter
 from PIL import Image
 
 from common import bytes_to_hash
-from db_data import get_all_image_inscriptions_iter
 from db_files import get_data
 
 HERE = Path(__file__).parent

@@ -4,6 +4,7 @@
 !average_hash_example.json
 __pycache__
 images
+helpers
 *.log
 *.txt
 !requirements.txt
