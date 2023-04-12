@@ -1,7 +1,7 @@
 use serde::Serialize;
 use serde_json::Value;
 use std::fs::File;
-use std::io::Read;
+use std::io::{BufReader, Read};
 use std::collections::HashMap;
 
 use std::fs::OpenOptions;
@@ -18,18 +18,18 @@ const TOP_N: usize = 20;
 
 /// Get matches for specified ord_id or file_hash
 pub fn get_matches(file_path: String, ord_id: Option<String>, file_hash: Option<String>, top_n: usize) -> String {
-    let mut file = File::open(file_path).expect("Unable to open the file");
+    let file = File::open(file_path).expect("Unable to open the file");
+    let mut reader = BufReader::new(file);
     let mut content = String::new();
-    file.read_to_string(&mut content)
+    reader.read_to_string(&mut content)
         .expect("Unable to read the file content");
 
     let json_data: Value = serde_json::from_str(&content).expect("Unable to parse JSON");
-    let json_data_clone = json_data.clone();
-
+    
     // If ord ID is provided, use it, otherwise use the file hash
     let file_hash = if let Some(ord_id) = ord_id {
-        if let Some(value) = json_data_clone.get(ord_id.clone()) {
-            value.as_str().expect("Unable to parse JSON").to_string()
+        if let Some(value) = json_data.get(ord_id) {
+            value.as_str().expect("Hash is not string").to_string()
         } else {
             return "[]".to_string();
         }
