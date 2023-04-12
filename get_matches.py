@@ -18,7 +18,13 @@ def get_matches(
     with open(json_file) as f:
         data = orjson.loads(f.read())
 
-    if ord_id is not None:
+    return get_matches_from_data(data, ord_id, file_hash, top_n)
+
+
+def get_matches_from_data(
+    data: dict[str, str], ord_id: str | None, file_hash: str | None, top_n: int = 20
+) -> list[Match]:
+    if ord_id:
         if ord_id not in data:
             return []
         file_hash = data[ord_id]
