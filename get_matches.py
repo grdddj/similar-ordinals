@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-import json
+import heapq
 from pathlib import Path
-from typing import Optional
+from typing import Iterator, Optional
 
+import orjson  # quicker in parsing the file than json
 import typer
 
 from common import Match, db_file, path_to_hash
@@ -15,19 +16,25 @@ def get_matches(
     json_file: str | Path, ord_id: str | None, file_hash: str | None, top_n: int = 20
 ) -> list[Match]:
     with open(json_file) as f:
-        data = json.load(f)
+        data = orjson.loads(f.read())
 
     if ord_id is not None:
+        if ord_id not in data:
+            return []
         file_hash = data[ord_id]
     assert file_hash is not None
 
-    matches: list[tuple[str, int]] = []
-    for file_name, hash in data.items():
-        match_sum = sum(c1 == c2 for c1, c2 in zip(file_hash, hash))
-        matches.append((file_name, match_sum))
+    file_int = int(file_hash, 2)
 
-    matches.sort(key=lambda x: x[1], reverse=True)
-    best_matches = matches[:top_n]
+    def match_generator() -> Iterator[tuple[str, int]]:
+        for file_name, hash in data.items():
+            hash_int = int(hash, 2)
+            xor_result = file_int ^ hash_int
+            match_sum = bin(xor_result).count("0")
+            yield file_name, match_sum
+
+    best_matches = heapq.nlargest(top_n, match_generator(), key=lambda x: x[1])
+
     return [
         {"ord_id": ord_id, "match_sum": match_sum} for ord_id, match_sum in best_matches
     ]

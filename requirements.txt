@@ -5,6 +5,7 @@ uvicorn
 python-multipart
 sqlmodel
 typer
+orjson
 black
 isort
 flake8
