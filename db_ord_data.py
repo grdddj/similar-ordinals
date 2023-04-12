@@ -50,6 +50,9 @@ class InscriptionModel(SQLModel, table=True):
     def ordinals_com_content_link(self) -> str:
         return f"https://ordinals.com/content/{self.tx_id}i0"
 
+    def ordinalswallet_content_link(self) -> str:
+        return f"https://turbo.ordinalswallet.com/inscription/content/{self.tx_id}i0"
+
     def mempool_space_link(self) -> str:
         return f"https://mempool.space/tx/{self.tx_id}"
 
