@@ -22,12 +22,13 @@ function selectImage() {
     })
     .then(response => response.json())
     .then(data => {
-      const resultDiv = document.getElementById('result');
-      resultDiv.innerHTML = JSON.stringify(data);
-      console.log(data);
+      const result = JSON.stringify(data);
+      localStorage.setItem('resultData', result);
+      window.location.href = "results.html";
     })
     .catch(error => console.error(error));
   }
+  
   
   const uploadButton = document.getElementById('uploadButton');
   uploadButton.addEventListener('click', selectImage);
