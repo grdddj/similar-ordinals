@@ -1,0 +1,41 @@
+@import url('https://fonts.googleapis.com/css2?family=Anuphan:wght@500&family=Montserrat:wght@800&display=swap');
+
+.title1{
+    font-family: 'Montserrat';
+    text-align: center;
+    margin-top: 10%;
+    font-size: 80px;
+}
+
+.subtitle{
+    font-family: 'Anuphan';
+    text-align: center;
+    font-size: 40px;
+    margin-top: -7%;
+    color: rgb(191, 15, 15);
+}
+
+button{
+    font-family: 'Anuphan';
+    border: 2px solid #000000;
+border-radius: 10px;
+font-size: 20px;
+padding-left: 20px;
+padding-right: 20px;
+padding-top: 10px;
+padding-bottom: 10px;
+background-color: white;
+cursor: pointer;
+display: block;
+  margin: 0 auto;
+}
+
+button:hover{
+    background-color: beige;
+}
+
+#filename{
+    font-family: 'Anuphan';
+    text-align: center;
+    margin-top: 2.5%;
+}
