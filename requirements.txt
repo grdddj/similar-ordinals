@@ -1,11 +1,11 @@
 Pillow
-imagehash
 fastapi
 uvicorn
 python-multipart
 sqlmodel
 typer
 orjson
+numpy
 black
 isort
 flake8
