@@ -8,6 +8,7 @@ import secrets
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Query, Request, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
 
 from common import Match, bytes_to_hash, db_file
 from db_ord_data import InscriptionModel
@@ -24,6 +25,15 @@ logging.basicConfig(
 )
 
 app = FastAPI()
+
+# This is the CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 USE_ORD_ID_INDEX = True
 
