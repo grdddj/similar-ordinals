@@ -53,6 +53,9 @@ class InscriptionModel(SQLModel, table=True):
     def ordinalswallet_content_link(self) -> str:
         return f"https://turbo.ordinalswallet.com/inscription/content/{self.tx_id}i0"
 
+    def hiro_content_link(self) -> str:
+        return f"https://api.hiro.so/ordinals/v1/inscriptions/{self.id}/content"
+
     def mempool_space_link(self) -> str:
         return f"https://mempool.space/tx/{self.tx_id}"
 

@@ -26,6 +26,7 @@ def get_full_inscription_result(match: Match) -> dict:
     inscr_dict["similarity"] = match["match_sum"]
     inscr_dict["ordinals_com_link"] = inscription.ordinals_com_link()
     inscr_dict["ordinals_com_content_link"] = inscription.ordinals_com_content_link()
+    inscr_dict["hiro_content_link"] = inscription.hiro_content_link()
     inscr_dict[
         "ordinalswallet_content_link"
     ] = inscription.ordinalswallet_content_link()
