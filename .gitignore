@@ -3,6 +3,7 @@
 *.json
 !average_hash_example.json
 __pycache__
+.mypy_cache
 images
 helpers
 *.log

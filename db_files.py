@@ -31,8 +31,7 @@ def get_data(tx_id: str) -> bytes | None:
     session = get_session()
     try:
         result = session.query(ByteData).get(tx_id)
-        if result:
-            return result.data
+        return result.data if result else None
     finally:
         session.close()
 

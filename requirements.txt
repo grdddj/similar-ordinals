@@ -9,3 +9,4 @@ orjson
 black
 isort
 flake8
+mypy 
