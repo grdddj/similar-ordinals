@@ -4,10 +4,7 @@ import json
 import logging
 from pathlib import Path
 
-import imagehash
-from PIL import Image  # type: ignore
-
-from common import bytes_to_hash
+from common import bytes_to_hash, db_file
 from db_files import get_data
 from db_ord_data import get_all_image_inscriptions_iter
 
@@ -20,18 +17,8 @@ logging.basicConfig(
     format="%(asctime)s %(message)s",
 )
 
-hash_size = 16
-db_file = f"average_hash_db_{hash_size}.json"
 
-
-def image_to_hash_bin_str(img: Image.Image) -> str:
-    bool_array = imagehash.average_hash(img, hash_size).hash
-    int_array = bool_array.flatten().astype(int)
-    binary_string = "".join(map(str, int_array))
-    return binary_string
-
-
-if __name__ == "__main__":
+def main() -> None:
     avg_hashes: dict[int, str] = {}
     try:
         index = 0
@@ -52,3 +39,7 @@ if __name__ == "__main__":
     finally:
         with open(db_file, "w") as f:
             json.dump(avg_hashes, f, indent=4)
+
+
+if __name__ == "__main__":
+    main()
