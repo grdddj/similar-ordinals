@@ -1,7 +1,6 @@
 from typing import Iterator
 
 from sqlmodel import Field, Index, Session, SQLModel, UniqueConstraint, create_engine
-from typing_extensions import Self
 
 db_location = "ord_data.db"
 
@@ -60,24 +59,30 @@ class InscriptionModel(SQLModel, table=True):
         return f"https://mempool.space/tx/{self.tx_id}"
 
     @classmethod
-    def by_tx_id(cls, tx_id: str) -> Self:
+    def by_tx_id(cls, tx_id: str) -> "InscriptionModel":
         session = get_session()
-        return (
+        model = (
             session.query(InscriptionModel)
             .filter(InscriptionModel.tx_id == tx_id)
             .first()
         )
+        if not model:
+            raise ValueError(f"No inscription with tx_id {tx_id}")
+        return model
 
     @classmethod
-    def by_id(cls, id: int) -> Self:
+    def by_id(cls, id: int) -> "InscriptionModel":
         session = get_session()
-        return session.query(InscriptionModel).filter(InscriptionModel.id == id).first()
+        model = session.query(InscriptionModel).get(id)
+        if not model:
+            raise ValueError(f"No inscription with id {id}")
+        return model
 
 
 def get_all_image_inscriptions_iter() -> Iterator[InscriptionModel]:
     session = get_session()
     yield from session.query(InscriptionModel).filter(
-        InscriptionModel.content_type.like("image/%")
+        InscriptionModel.content_type.like("image/%")  # type: ignore
     ).yield_per(100)
 
 

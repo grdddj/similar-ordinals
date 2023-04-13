@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import TypedDict
 
 import imagehash
-from PIL import Image
+from PIL import Image  # type: ignore
 
 HERE = Path(__file__).parent
 

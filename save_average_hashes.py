@@ -5,7 +5,7 @@ import logging
 from pathlib import Path
 
 import imagehash
-from PIL import Image
+from PIL import Image  # type: ignore
 
 from common import bytes_to_hash
 from db_files import get_data
