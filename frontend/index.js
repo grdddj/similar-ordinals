@@ -1,12 +1,18 @@
+const SPONSOR_MINTING_WEBSITE = "https://ordinalswallet.com/inscribe"
+
 function selectImage() {
   const input = document.getElementById('fileInput');
   input.click();
   input.addEventListener('change', () => {
     const file = input.files[0];
-    const fileNameDisplay = document.getElementById('fileName');
-    fileNameDisplay.innerHTML = `File Name: ${file.name}`;
-    const filenameAndSubmit = document.getElementById('filenameAndSubmit');
-    filenameAndSubmit.style.display = "block";
+    // Showing the chosen picture in a card
+    const reader = new FileReader();
+    reader.addEventListener('load', (event) => {
+      fill_chosen_picture(event.target.result, null);
+    });
+    reader.readAsDataURL(file);
+    // Submitting the image
+    submitImage();
   });
 }
 
@@ -26,13 +32,10 @@ function submitImage() {
   })
     .then(response => response.json())
     .then(data => {
-      console.log(data)
-      // Hide the loading popup and submit button
+      // Hide the loading popup
       popup.style.display = "none";
-      const filenameAndSubmit = document.getElementById('filenameAndSubmit');
-      filenameAndSubmit.style.display = "none";
       // Show the results
-      updateResults(data);
+      updateResults(data, null);
     })
     .catch(error => {
       console.error(error);
@@ -44,11 +47,61 @@ function submitImage() {
     });
 }
 
+function chooseOrdID() {
+  const ordID = prompt("Please enter the Ordinal ID:");
 
-function updateResults(new_data) {
+  // Show the loading popup
+  const popup = document.getElementById('loadingPopup');
+  popup.style.display = "block";
+
+  fetch('http://grdddj.eu:8001/ord_id/' + ordID)
+    .then(response => response.json())
+    .then(data => {
+      // Hide the loading popup
+      popup.style.display = "none";
+      if (data.result.length == 0) {
+        alert("Given Ordinal ID is not a picture.");
+        return;
+      }
+      // Show the results
+      updateResults(data, ordID);
+      // Show the chosen picture
+      const chosenItem = data.result.find(item => item.id == ordID);
+      if (chosenItem) {
+        fill_chosen_picture(chosenItem.hiro_content_link, ordID);
+      }
+    })
+    .catch(error => {
+      console.error(error);
+      // Hide the loading popup
+      popup.style.display = "none";
+      // Show the error popup
+      const errorPopup = document.getElementById('errorPopup');
+      errorPopup.style.display = "block";
+    });
+}
+
+function fill_chosen_picture(src, ord_id) {
+  const chosenPic = document.getElementById('chosen-picture');
+  let firstLine = '';
+  let secondLine = '';
+  if (ord_id) {
+    firstLine = `Your ordinal: ${ord_id}`;
+  } else {
+    firstLine = 'Your potential ordinal';
+    secondLine = `Mint <a href=${SPONSOR_MINTING_WEBSITE} target="_blank">HERE</a>`;
+  }
+  chosenPic.innerHTML = `<div class="card">
+                 <img src="${src}">
+                 <p><strong>${firstLine}</strong></p>
+                 <p>${secondLine}</p>
+               </div>`;
+}
+
+
+function updateResults(new_data, chosenOrdID) {
   // Load everything into dictionary for faster lookup per ID
   const resultDict = {};
-  console.log(new_data)
   new_data.result.forEach(function (item) {
     resultDict[item.id] = item;
   });
@@ -56,10 +109,29 @@ function updateResults(new_data) {
   let output = '';
 
   new_data.result.forEach(function (item) {
-    output += `<div class="card" ord-id="${item.id}">
+    // Not displaying the item which user chose - by ordID
+    // Also, marking those pixel-perfect matches as those
+    let isDuplicate = false;
+    if (chosenOrdID) {
+      const chosenItem = resultDict[chosenOrdID];
+      if (item.id == chosenOrdID) {
+        return;
+      } else if (item.content_hash == chosenItem.content_hash) {
+        isDuplicate = true;
+      }
+    }
+    
+    let similarity = item.similarity;
+    let red = '';
+    if (isDuplicate) {
+      similarity = "IDENTICAL";
+      red = 'style="background-color: red"';
+    }
+    
+    output += `<div class="card" ${red} ord-id="${item.id}">
                  <img src="${item.hiro_content_link}">
                  <button class="id-btn">Ordinal ID: ${item.id}</button>
-                 <p><strong>Similarity:</strong>${item.similarity}</p>
+                 <p><strong>Similarity: </strong>${similarity}</p>
                </div>`;
   });
 

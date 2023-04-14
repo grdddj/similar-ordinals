@@ -18,15 +18,15 @@
     </div>
 
     <button id="uploadButton" class="upload" onclick="selectImage()">
-      Upload your Ordinal
+      Upload your Ordinal picture
     </button>
     <input type="file" id="fileInput" style="display: none" />
-    <div id="filenameAndSubmit" style="display: none">
-      <p id="fileName"></p>
-      <button id="submitButton" onclick="submitImage()">
-        Submit
-      </button>
-    </div>
+
+    <br>
+    
+    <button id="ordIDButton" onclick="chooseOrdID()">
+      Choose an Ordinal ID
+    </button>
 
     <div id="loadingPopup" class="popup">
       <div class="popupContent">
@@ -40,9 +40,13 @@
         <p>Error when getting data. We apologize, please try later.</p>
       </div>
     </div>
+
+    <div id="chosen-picture">
+      <!-- To be filled -->
+    </div>
     
     <div id="results" style="display: none">
-      <h1>Results</h1>
+      <h1>Similar ones</h1>
       <div class="card-container" id="result"></div>
       <div id="popup-container">
         <div id="popupDetails">      
