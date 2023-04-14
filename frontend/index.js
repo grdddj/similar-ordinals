@@ -47,8 +47,8 @@ function submitImage() {
 function chooseOrdID() {
     const ordID = prompt("Please enter the Ordinal ID:");
 
-    // User cancelled the prompt
-    if (ordID == null) {
+    // User cancelled the prompt or entered nothing
+    if (ordID == null || ordID == "") {
         return;
     }
 
