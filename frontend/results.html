@@ -2,11 +2,24 @@
 <html>
   <head>
     <title>Results</title>
-    <script src="results.js"></script>
     <link rel="stylesheet" href="results.css">
   </head>
   <body>
     <h1>Results</h1>
-    <div id="result"></div>
+    <div class="card-container" id="result"></div>
+
+    <div id="popup-container">
+      <div id="popup">
+       
+        <div id="popup-info">
+          <p id="datetime"></p>
+          <p id="id"></p>
+          <p id="minted-address"></p>
+        </div>
+        <button id="close-btn">Close</button>
+      </div>
+    </div>
+
+    <script src="results.js"></script>
   </body>
 </html>
