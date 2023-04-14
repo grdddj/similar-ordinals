@@ -1,36 +1,55 @@
 <html>
-    <head>
-        <link rel="stylesheet" href="index.css">
-        <script src="index.js"></script>
-    </head>
-    <body>
-        <div class="main">
-        <p class="title1">OrdSimilarity</p>
-        <p class= "subtitle">differentiate your ordinals!</p>
-    </div>
-    <button id="uploadButton" class="upload" onclick="selectImage()">Upload your Ordinal</button>
-<input type="file" id="fileInput" style="display:none;">
-<p id="fileName"></p>
-<button id="submitButton" style="display:none;" onclick="submitImage()">Submit</button>
-<div id="result"></div>
-<div id="loadingPopup" class="popup">
-    <div class="popup-content">
-      <div class="loader"></div>
-      <p class="loadingg">Loading...</p>
-    </div>
-  </div>
+  <head>
+    <title>OrdSimilarity</title>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1" name="viewport">
+    <meta
+      description="Search engine looking for similar ordinals pictures. You can upload either a custom file or give and ordinal ID and get ordinals that are identical or similar.">
+    <meta keywords="Bitcoin ordinals inscriptions similarity search-engine">
+    <meta author="grdddj - https://github.com/grdddj">
+    <link rel="stylesheet" href="index.css" />
+    <script src="index.js"></script>
+  </head>
 
-  <div id="successPopup" class="popup">
-    <div class="popup-content">
-      <p>We found similar ordinals!</p>
+  <body>
+    <div class="main">
+      <p class="title1">OrdSimilarity</p>
+      <p class="subtitle">differentiate your ordinals!</p>
     </div>
-  </div>
 
-  <div id="errorPopup" class="popup">
-    <div class="popup-content">
-      <p>No similar ordinal was found! Your ordinal is unique</p>
+    <button id="uploadButton" class="upload" onclick="selectImage()">
+      Upload your Ordinal
+    </button>
+    <input type="file" id="fileInput" style="display: none" />
+    <div id="filenameAndSubmit" style="display: none">
+      <p id="fileName"></p>
+      <button id="submitButton" onclick="submitImage()">
+        Submit
+      </button>
     </div>
-  </div>
 
-    </body>
+    <div id="loadingPopup" class="popup">
+      <div class="popupContent">
+        <div class="loader"></div>
+        <p class="loadingg">Loading...</p>
+      </div>
+    </div>
+
+    <div id="errorPopup" class="popup">
+      <div class="popupContent">
+        <p>Error when getting data. We apologize, please try later.</p>
+      </div>
+    </div>
+    
+    <div id="results" style="display: none">
+      <h1>Results</h1>
+      <div class="card-container" id="result"></div>
+      <div id="popup-container">
+        <div id="popupDetails">      
+          <button id="close-btn">Close</button>
+        </div>
+      </div>
+    </div>
+
+  </body>
 </html>
