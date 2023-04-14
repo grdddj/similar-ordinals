@@ -49,5 +49,22 @@
       </div>
     </div>
 
+    <script>
+      const popupContainer = document.getElementById("popup-container");
+      const closeBtn = document.getElementById("close-btn");
+
+      // Close the popup when the user clicks outside of it
+      window.onclick = function(event) {
+        if (event.target === popupContainer) {
+          popupContainer.style.display = "none";
+        }
+      }
+
+      // Close the popup when the user clicks the close button
+      closeBtn.onclick = function() {
+        popupContainer.style.display = "none";
+      }
+    </script>
+
   </body>
 </html>
