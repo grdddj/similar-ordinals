@@ -38,7 +38,8 @@ def main() -> None:
         pass
     finally:
         with open(db_file, "w") as f:
-            json.dump(avg_hashes, f, indent=4)
+            results = {"data": avg_hashes}
+            json.dump(results, f, indent=1)
 
 
 if __name__ == "__main__":

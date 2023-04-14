@@ -14,6 +14,7 @@ from common import Match, bytes_to_hash, db_file
 from db_ord_data import InscriptionModel
 from db_similarity_index import SimilarityIndex
 from get_matches import get_matches_from_data
+from rust_server import get_matches_from_rust_server
 
 HERE = Path(__file__).parent
 
@@ -37,9 +38,21 @@ app.add_middleware(
 
 USE_ORD_ID_INDEX = True
 
-# Loading the data globally, so it is immediately available for all requests
-with open(db_file) as f:
-    data = json.load(f)
+
+# Storing the data globally, so it is immediately available for all requests
+# Not loading it right away, as Rust server should be handling this
+# Loading them as soon as the Rust server fails and we need to fallback into Python
+average_hash_data: dict[str, str] = {}
+
+
+def load_average_hash_data_if_not_there() -> None:
+    global average_hash_data
+
+    if not average_hash_data:
+        logging.info("Loading the average_hash_data from JSON")
+        with open(db_file) as f:
+            average_hash_data = json.load(f)["data"]
+        logging.info("Finished loading average_hash_data")
 
 
 def get_full_inscription_result(match: Match) -> dict:
@@ -83,14 +96,21 @@ async def by_ord_id(request: Request, ord_id: int, top_n: int = Query(20)):
 
 
 def do_by_ord_id(ord_id: int, top_n: int = 20) -> list[dict]:
-    if USE_ORD_ID_INDEX:
-        matches: list[Match] = [
-            {"ord_id": str(match_ord_id), "match_sum": match_sum}
-            for match_ord_id, match_sum in SimilarityIndex.list_by_id(ord_id)[:top_n]
-        ]
-    else:
-        matches = get_matches_from_data(data, str(ord_id), None, top_n)
-    return [get_full_inscription_result(match) for match in matches]
+    try:
+        matches = get_matches_from_rust_server(ord_id, None)
+    except Exception as e:
+        logging.error(f"Error from Rust server: {e}")
+        if USE_ORD_ID_INDEX:
+            matches = [
+                {"ord_id": str(match_ord_id), "match_sum": match_sum}
+                for match_ord_id, match_sum in SimilarityIndex.list_by_id(ord_id)[
+                    :top_n
+                ]
+            ]
+        else:
+            load_average_hash_data_if_not_there()
+            matches = get_matches_from_data(average_hash_data, str(ord_id), None, top_n)
+    return [get_full_inscription_result(match) for match in matches[:top_n]]
 
 
 # curl -X POST -H "Content-Type: multipart/form-data" -F "file=@images/1.jpg" http://localhost:8001/file?top_n=10
@@ -112,5 +132,10 @@ async def by_custom_file(request: Request, file: UploadFile, top_n: int = Query(
 
 def do_by_custom_file(file_bytes: bytes, top_n: int = 20) -> list[dict]:
     file_hash = bytes_to_hash(file_bytes)
-    matches = get_matches_from_data(data, None, file_hash, top_n)
-    return [get_full_inscription_result(match) for match in matches]
+    try:
+        matches = get_matches_from_rust_server(None, file_hash)
+    except Exception as e:
+        logging.error(f"Error from Rust server: {e}")
+        load_average_hash_data_if_not_there()
+        matches = get_matches_from_data(average_hash_data, None, file_hash, top_n)
+    return [get_full_inscription_result(match) for match in matches[:top_n]]

@@ -16,7 +16,7 @@ def get_matches(
     json_file: str | Path, ord_id: str | None, file_hash: str | None, top_n: int = 20
 ) -> list[Match]:
     with open(json_file) as f:
-        data = orjson.loads(f.read())
+        data = orjson.loads(f.read())["data"]
 
     return get_matches_from_data(data, ord_id, file_hash, top_n)
 
