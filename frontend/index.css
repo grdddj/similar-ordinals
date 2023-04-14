@@ -106,7 +106,7 @@ h1 {
 /* Styling for each card */
 .card {
   width: 300px;
-  height: 400px;
+  height: 500px;
   border-radius: 10px;
   box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
   margin: 20px;
@@ -114,6 +114,7 @@ h1 {
   transition: transform 0.3s ease-in-out;
   text-align: center;
   cursor: pointer;
+  margin-top: 5%;
 }
 
 /* Styling for the image in each card */
@@ -180,9 +181,7 @@ h1 {
   flex-direction: column;
   justify-content: space-between;
   align-items: flex-end;
-  width: 60%;
-  height: 100%;
-  padding: 20px;
+  padding: 30px;
   font-family: 'Montserrat';
   font-size: 20px;
   background-color: white;
@@ -218,23 +217,16 @@ h1 {
 }
 
 .popup-details p {
-  font-size: 14px;
+  font-size: 18px;
   line-height: 1.5;
   margin: 10px 0;
 }
 
-@media (min-width: 1100px) {
-  .popup-details p {
-    font-size: 18px;
-    line-height: 1.8;
-    margin: 15px 0;
-  }
-}
 
-@media (min-width: 1100px) {
-  .popup-details p {
-    font-size: 18px;
-    line-height: 1.8;
-    margin: 15px 0;
-  }
+
+.main{
+  margin-top: 2%;
+}
+.text1{
+  font-family: "Anuphan";
 }

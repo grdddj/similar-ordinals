@@ -81,16 +81,16 @@ function fill_chosen_picture(src, chosenItem) {
         firstLine = `Your ordinal`;
         secondLine = chosenItem.id;
     } else {
-        firstLine = 'Your potential ordinal';
-        secondLine = `Mint <a href=${SPONSOR_MINTING_WEBSITE} target="_blank">HERE</a>`;
+        firstLine = 'Your Potential Ordinal';
+        secondLine = `Mint <a href=${SPONSOR_MINTING_WEBSITE} target="_blank">Here</a>`;
     }
 
     // create a new div with class card and put it into chosenPic
     const cardDiv = document.createElement('cardD');
     cardDiv.className = 'card';
     cardDiv.innerHTML = `<img src="${src}">
-                <p><strong>${firstLine}</strong></p>
-                <p>${secondLine}</p>`;
+                <p class = "text1"><strong>${firstLine}</strong></p>
+                <p class = "text1">${secondLine}</p>`;
     chosenPic.innerHTML = '';
     chosenPic.appendChild(cardDiv);
 
@@ -133,7 +133,7 @@ function updateResults(new_data, chosenOrdID) {
         output += `<div class="card" ${red} ord-id="${item.id}">
                  <img src="${item.hiro_content_link}">
                  <button class="id-btn">Ordinal ID: ${item.id}</button>
-                 <p><strong>Similarity: </strong>${similarity}</p>
+                 <p class="text1"><strong>Similarity: </strong>${similarity}</p>
                </div>`;
     });
 
