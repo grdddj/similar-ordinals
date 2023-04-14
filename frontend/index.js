@@ -152,6 +152,12 @@ function updateResults(new_data, chosenOrdID) {
     });
 }
 
+function shortenString(str, length) {
+    const firstN = str.substring(0, length);
+    const lastN = str.substring(str.length - length);
+    return `${firstN}...${lastN}`;
+}
+
 function addItemDetailsPopupToCard(cardDiv, item) {
     cardDiv.addEventListener('click', function() {
         const popupContainer = document.getElementById('popup-container');
@@ -159,18 +165,26 @@ function addItemDetailsPopupToCard(cardDiv, item) {
 
         const mintedAddressLink = `https://mempool.space/address/${item.minted_address}`;
 
+        // Shortcuts are first four letters, three dots and four last letters
+        const short_minted_address = shortenString(item.minted_address, 4);
+        const short_ordinals_com_link = shortenString(item.ordinals_com_link, 4);
+        const short_tx_id = shortenString(item.tx_id, 4);
+
+        // Take just the first part before space
+        const publishedDate = item.datetime.split(' ')[0];
+
         const content = `
         <div id="popup-content-details">
           <span id="close-btn">&times;</span>
   
           <div class="popup-details">
             <p><strong>ID:</strong> ${item.id}</p>
-            <p><strong>Time Published:</strong> ${item.datetime}</p>
+            <p><strong>Date Published:</strong> ${publishedDate}</p>
             <p><strong>Content type:</strong> ${item.content_type}</p>
             <p><strong>Content length:</strong> ${item.content_length} bytes</p>
-            <p><strong>Minted Address:</strong> <a href="${mintedAddressLink}" target="_blank">${item.minted_address}</a></p>
-            <p><strong>Ordinals.com link:</strong> <a href="${item.ordinals_com_link}" target="_blank">${item.ordinals_com_link}</a></p>
-            <p><strong>Transaction ID:</strong> <a href="${item.mempool_space_link}" target="_blank">${item.tx_id}</a></p>
+            <p><strong>Minted Address:</strong> <a href="${mintedAddressLink}" target="_blank">${short_minted_address}</a></p>
+            <p><strong>Ordinals.com link:</strong> <a href="${item.ordinals_com_link}" target="_blank">${short_ordinals_com_link}</a></p>
+            <p><strong>Transaction ID:</strong> <a href="${item.mempool_space_link}" target="_blank">${short_tx_id}</a></p>
           </div>
         </div>
       `;
