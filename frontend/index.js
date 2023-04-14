@@ -1,162 +1,170 @@
-const SPONSOR_MINTING_WEBSITE = "https://ordinalswallet.com/inscribe"
+const SPONSOR_MINTING_WEBSITE = "https://ordinalswallet.com/inscribe";
 
 function selectImage() {
-  const input = document.getElementById('fileInput');
-  input.click();
-  input.addEventListener('change', () => {
-    const file = input.files[0];
-    // Showing the chosen picture in a card
-    const reader = new FileReader();
-    reader.addEventListener('load', (event) => {
-      fill_chosen_picture(event.target.result, null);
+    const input = document.getElementById('fileInput');
+    input.click();
+    input.addEventListener('change', () => {
+        const file = input.files[0];
+        // Showing the chosen picture in a card
+        const reader = new FileReader();
+        reader.addEventListener('load', (event) => {
+            fill_chosen_picture(event.target.result, null);
+        });
+        reader.readAsDataURL(file);
+        // Submitting the image
+        submitImage();
     });
-    reader.readAsDataURL(file);
-    // Submitting the image
-    submitImage();
-  });
 }
 
 function submitImage() {
-  const input = document.getElementById('fileInput');
-  const file = input.files[0];
-  const formData = new FormData();
-  formData.append('file', file);
+    const input = document.getElementById('fileInput');
+    const file = input.files[0];
+    const formData = new FormData();
+    formData.append('file', file);
 
-  // Show the loading popup
-  const popup = document.getElementById('loadingPopup');
-  popup.style.display = "block";
+    // Show the loading popup
+    const popup = document.getElementById('loadingPopup');
+    popup.style.display = "block";
 
-  fetch('http://grdddj.eu:8001/file', {
-    method: 'POST',
-    body: formData
-  })
-    .then(response => response.json())
-    .then(data => {
-      // Hide the loading popup
-      popup.style.display = "none";
-      // Show the results
-      updateResults(data, null);
-    })
-    .catch(error => {
-      console.error(error);
-      // Hide the loading popup
-      popup.style.display = "none";
-      // Show the error popup
-      const errorPopup = document.getElementById('errorPopup');
-      errorPopup.style.display = "block";
-    });
+    fetch('http://grdddj.eu:8001/file', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Hide the loading popup
+            popup.style.display = "none";
+            // Show the results
+            updateResults(data, null);
+        })
+        .catch(error => {
+            console.error(error);
+            // Hide the loading popup
+            popup.style.display = "none";
+        });
 }
 
 function chooseOrdID() {
-  const ordID = prompt("Please enter the Ordinal ID:");
+    const ordID = prompt("Please enter the Ordinal ID:");
 
-  // Show the loading popup
-  const popup = document.getElementById('loadingPopup');
-  popup.style.display = "block";
-
-  fetch('http://grdddj.eu:8001/ord_id/' + ordID)
-    .then(response => response.json())
-    .then(data => {
-      // Hide the loading popup
-      popup.style.display = "none";
-      if (data.result.length == 0) {
-        alert("Given Ordinal ID is not a picture.");
+    // User cancelled the prompt
+    if (ordID == null) {
         return;
-      }
-      // Show the results
-      updateResults(data, ordID);
-      // Show the chosen picture
-      const chosenItem = data.result.find(item => item.id == ordID);
-      if (chosenItem) {
-        fill_chosen_picture(chosenItem.hiro_content_link, ordID);
-      }
-    })
-    .catch(error => {
-      console.error(error);
-      // Hide the loading popup
-      popup.style.display = "none";
-      // Show the error popup
-      const errorPopup = document.getElementById('errorPopup');
-      errorPopup.style.display = "block";
-    });
+    }
+
+    fetch('http://grdddj.eu:8001/ord_id/' + ordID)
+        .then(response => response.json())
+        .then(data => {
+            if (data.result.length == 0) {
+                alert("Given Ordinal ID is not a picture.");
+                return;
+            }
+            // Show the results
+            updateResults(data, ordID);
+            // Show the chosen picture
+            const chosenItem = data.result.find(item => item.id == ordID);
+            if (chosenItem) {
+                fill_chosen_picture(chosenItem.hiro_content_link, chosenItem);
+            }
+        })
+        .catch(error => {
+            console.error(error);
+            alert("Error when getting data. We apologize, please try later.");
+        });
 }
 
-function fill_chosen_picture(src, ord_id) {
-  const chosenPic = document.getElementById('chosen-picture');
-  let firstLine = '';
-  let secondLine = '';
-  if (ord_id) {
-    firstLine = `Your ordinal: ${ord_id}`;
-  } else {
-    firstLine = 'Your potential ordinal';
-    secondLine = `Mint <a href=${SPONSOR_MINTING_WEBSITE} target="_blank">HERE</a>`;
-  }
-  chosenPic.innerHTML = `<div class="card">
-                 <img src="${src}">
-                 <p><strong>${firstLine}</strong></p>
-                 <p>${secondLine}</p>
-               </div>`;
+function fill_chosen_picture(src, chosenItem) {
+    const chosenPic = document.getElementById('chosen-picture');
+    let firstLine = '';
+    let secondLine = '';
+    if (chosenItem) {
+        firstLine = `Your ordinal`;
+        secondLine = chosenItem.id;
+    } else {
+        firstLine = 'Your potential ordinal';
+        secondLine = `Mint <a href=${SPONSOR_MINTING_WEBSITE} target="_blank">HERE</a>`;
+    }
+
+    // create a new div with class card and put it into chosenPic
+    const cardDiv = document.createElement('cardD');
+    cardDiv.className = 'card';
+    cardDiv.innerHTML = `<img src="${src}">
+                <p><strong>${firstLine}</strong></p>
+                <p>${secondLine}</p>`;
+    chosenPic.innerHTML = '';
+    chosenPic.appendChild(cardDiv);
+
+    // add event listener to cardDiv for details, when we do have the details
+    if (chosenItem) {
+        addItemDetailsPopupToCard(cardDiv, chosenItem);
+    }
 }
 
 
 function updateResults(new_data, chosenOrdID) {
-  // Load everything into dictionary for faster lookup per ID
-  const resultDict = {};
-  new_data.result.forEach(function (item) {
-    resultDict[item.id] = item;
-  });
+    // Load everything into dictionary for faster lookup per ID
+    const resultDict = {};
+    new_data.result.forEach(function(item) {
+        resultDict[item.id] = item;
+    });
 
-  let output = '';
+    let output = '';
 
-  new_data.result.forEach(function (item) {
-    // Not displaying the item which user chose - by ordID
-    // Also, marking those pixel-perfect matches as those
-    let isDuplicate = false;
-    if (chosenOrdID) {
-      const chosenItem = resultDict[chosenOrdID];
-      if (item.id == chosenOrdID) {
-        return;
-      } else if (item.content_hash == chosenItem.content_hash) {
-        isDuplicate = true;
-      }
-    }
-    
-    let similarity = item.similarity;
-    let red = '';
-    if (isDuplicate) {
-      similarity = "IDENTICAL";
-      red = 'style="background-color: red"';
-    }
-    
-    output += `<div class="card" ${red} ord-id="${item.id}">
+    new_data.result.forEach(function(item) {
+        // Not displaying the item which user chose - by ordID
+        // Also, marking those pixel-perfect matches as those
+        let isDuplicate = false;
+        if (chosenOrdID) {
+            const chosenItem = resultDict[chosenOrdID];
+            if (item.id == chosenOrdID) {
+                return;
+            } else if (item.content_hash == chosenItem.content_hash) {
+                isDuplicate = true;
+            }
+        }
+
+        let similarity = item.similarity;
+        let red = '';
+        if (isDuplicate) {
+            similarity = "IDENTICAL";
+            red = 'style="background-color: red"';
+        }
+
+        output += `<div class="card" ${red} ord-id="${item.id}">
                  <img src="${item.hiro_content_link}">
                  <button class="id-btn">Ordinal ID: ${item.id}</button>
                  <p><strong>Similarity: </strong>${similarity}</p>
                </div>`;
-  });
+    });
 
-  const resultDiv = document.getElementById('result');
-  resultDiv.innerHTML = output;
-  const resultsDivOverall = document.getElementById('results');
-  resultsDivOverall.style.display = "block";
+    const resultDiv = document.getElementById('result');
+    resultDiv.innerHTML = output;
+    const resultsDivOverall = document.getElementById('results');
+    resultsDivOverall.style.display = "block";
 
-  const divCards = document.querySelectorAll('.card');
-  const popupContainer = document.getElementById('popup-container');
-  const popupDetails = document.getElementById('popupDetails');
+    const divCards = document.querySelectorAll('.card');
 
-  // Open details by clicking on each card
-  divCards.forEach(function (cardDiv) {
-    cardDiv.addEventListener('click', function () {
-      const ordId = cardDiv.getAttribute('ord-id');
-      const item = resultDict[ordId]
-      const mintedAddressLink = `https://mempool.space/address/${item.minted_address}`
+    // Open details by clicking on each card
+    divCards.forEach(function(cardDiv) {
+        const ordId = cardDiv.getAttribute('ord-id');
+        const item = resultDict[ordId];
+        addItemDetailsPopupToCard(cardDiv, item);
+    });
+}
 
-      const content = `
+function addItemDetailsPopupToCard(cardDiv, item) {
+    cardDiv.addEventListener('click', function() {
+        const popupContainer = document.getElementById('popup-container');
+        const popupDetails = document.getElementById('popupDetails');
+
+        const mintedAddressLink = `https://mempool.space/address/${item.minted_address}`;
+
+        const content = `
         <div id="popup-content-details">
           <span id="close-btn">&times;</span>
-
+  
           <div class="popup-details">
-            <p><strong>ID:</strong> ${ordId}</p>
+            <p><strong>ID:</strong> ${item.id}</p>
             <p><strong>Time Published:</strong> ${item.datetime}</p>
             <p><strong>Content type:</strong> ${item.content_type}</p>
             <p><strong>Content length:</strong> ${item.content_length} bytes</p>
@@ -167,13 +175,12 @@ function updateResults(new_data, chosenOrdID) {
         </div>
       `;
 
-      popupDetails.innerHTML = content;
-      popupContainer.style.display = 'flex';
+        popupDetails.innerHTML = content;
+        popupContainer.style.display = 'flex';
 
-      const closeBtn = document.getElementById('close-btn');
-      closeBtn.addEventListener('click', function () {
-        popupContainer.style.display = 'none';
-      });
+        const closeBtn = document.getElementById('close-btn');
+        closeBtn.addEventListener('click', function() {
+            popupContainer.style.display = 'none';
+        });
     });
-  });
 }
