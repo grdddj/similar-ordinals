@@ -39,3 +39,47 @@ button:hover{
     text-align: center;
     margin-top: 2.5%;
 }
+
+.popup {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+  
+  .popup-content {
+    background-color: white;
+    margin: 10% auto;
+    padding: 40px;
+    border: 1px solid #888;
+    width: 30%;
+    text-align: center;
+    position: relative;
+  }
+  
+  .loader {
+    border: 16px solid #f3f3f3;
+    border-top: 16px solid rgb(191, 15, 15);
+    border-radius: 50%;
+    width: 120px;
+    height: 120px;
+    animation: spin 2s linear infinite;
+    margin: 0 auto;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+.loadingg{
+    font-family: 'Anuphan';
+    color: #6012d5;
+    margin-top: 40px;
+    font-size: 20px;
+}

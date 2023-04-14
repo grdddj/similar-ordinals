@@ -16,6 +16,10 @@ function selectImage() {
     const formData = new FormData();
     formData.append('file', file);
   
+    // Show the loading popup
+    const popup = document.getElementById('loadingPopup');
+    popup.style.display = "block";
+  
     fetch('http://grdddj.eu:8001/file', {
       method: 'POST',
       body: formData
@@ -24,15 +28,22 @@ function selectImage() {
     .then(data => {
       const result = JSON.stringify(data);
       localStorage.setItem('resultData', result);
-      window.location.href = "results.html";
+      // Hide the loading popup
+      popup.style.display = "none";
+      // Show the success popup
+      
+      // Redirect to results page after a delay
+      setTimeout(function() {
+        window.location.href = "results.html";
+      }, 500);
     })
-    .catch(error => console.error(error));
+    .catch(error => {
+      console.error(error);
+      // Hide the loading popup
+      popup.style.display = "none";
+      // Show the error popup
+      const errorPopup = document.getElementById('errorPopup');
+      errorPopup.style.display = "block";
+    });
   }
-  
-  
-  const uploadButton = document.getElementById('uploadButton');
-  uploadButton.addEventListener('click', selectImage);
-  
-  const submitButton = document.getElementById('submitButton');
-  submitButton.addEventListener('click', submitImage);
   

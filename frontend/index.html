@@ -13,6 +13,24 @@
 <p id="fileName"></p>
 <button id="submitButton" style="display:none;" onclick="submitImage()">Submit</button>
 <div id="result"></div>
+<div id="loadingPopup" class="popup">
+    <div class="popup-content">
+      <div class="loader"></div>
+      <p class="loadingg">Loading...</p>
+    </div>
+  </div>
+
+  <div id="successPopup" class="popup">
+    <div class="popup-content">
+      <p>We found similar ordinals!</p>
+    </div>
+  </div>
+
+  <div id="errorPopup" class="popup">
+    <div class="popup-content">
+      <p>No similar ordinal was found! Your ordinal is unique</p>
+    </div>
+  </div>
 
     </body>
 </html>
