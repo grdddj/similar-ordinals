@@ -3,15 +3,18 @@
 .title1{
     font-family: 'Montserrat';
     text-align: center;
-    margin-top: 10%;
-    font-size: 80px;
-}
-
-.subtitle{
+    /* margin-top: 10%; */
+    margin-top: 0%;
+    margin-bottom: 0%;
+    font-size: 3em;
+  }
+  
+  .subtitle{
     font-family: 'Anuphan';
     text-align: center;
-    font-size: 40px;
-    margin-top: -7%;
+    font-size: 2em;
+    margin-top: 0%;
+    /* margin-top: -7%; */
     color: rgb(191, 15, 15);
 }
 
@@ -135,6 +138,12 @@ h1 {
 .card:hover {
   transform: translateY(-5px);
   box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.2);
+}
+
+#chosen-picture {
+  justify-content: center;
+  align-items: center;
+  display: flex;
 }
 
 /* Styling for the popup container */
