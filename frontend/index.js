@@ -26,7 +26,7 @@ function submitImage() {
     const popup = document.getElementById('loadingPopup');
     popup.style.display = "block";
 
-    fetch('http://grdddj.eu:8001/file', {
+    fetch('https://api.ordsimilarity.com/file', {
             method: 'POST',
             body: formData
         })
@@ -52,7 +52,7 @@ function chooseOrdID() {
         return;
     }
 
-    fetch('http://grdddj.eu:8001/ord_id/' + ordID)
+    fetch('https://api.ordsimilarity.com/ord_id/' + ordID)
         .then(response => response.json())
         .then(data => {
             if (data.result.length == 0) {
