@@ -40,6 +40,8 @@ function submitImage() {
             popup.style.display = "none";
             // Show the results
             updateResults(data, null);
+            // Showing the trivia funny facts
+            showTriviaFooter();
         })
         .catch(error => {
             console.error(error);
@@ -245,7 +247,7 @@ function getOrdIdResults(ordID) {
             // Update the URL to contain ord_id=ordID parameter
             updateURLWithQueryParam("ord_id", ordID);
             // Showing the trivia funny facts
-            enableTriviaFooter();
+            showTriviaFooter();
             // Scrolling the view to see the beginning of results
             const chosenPicture = document.getElementById('chosen-picture');
             chosenPicture.scrollIntoView({ behavior: 'smooth' });
@@ -264,7 +266,7 @@ function getOrdIdResults(ordID) {
         });
 }
 
-function enableTriviaFooter() {
+function showTriviaFooter() {
     const triviaFooter = document.getElementById("trivia");
     triviaFooter.style.display = "block";
 }
