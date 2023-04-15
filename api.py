@@ -10,7 +10,8 @@ from pathlib import Path
 from fastapi import FastAPI, HTTPException, Query, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 
-from common import Match, bytes_to_hash, db_file
+from common import Match, bytes_to_hash
+from config import Config
 from db_ord_data import InscriptionModel
 from db_similarity_index import SimilarityIndex
 from get_matches import get_matches_from_data
@@ -50,7 +51,7 @@ def load_average_hash_data_if_not_there() -> None:
 
     if not average_hash_data:
         logging.info("Loading the average_hash_data from JSON")
-        with open(db_file) as f:
+        with open(Config.AVERAGE_HASH_DB) as f:
             average_hash_data = json.load(f)["data"]
         logging.info("Finished loading average_hash_data")
 

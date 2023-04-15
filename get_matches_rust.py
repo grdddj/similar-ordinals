@@ -8,12 +8,11 @@ from typing import Optional
 
 import typer
 
-from common import Match, db_file, path_to_hash
+from common import Match, path_to_hash
+from config import Config
 
 # Load the shared Rust library
-rust_lib = ctypes.cdll.LoadLibrary(
-    "similar_pictures/target/release/libsimilar_pictures.so"
-)
+rust_lib = ctypes.cdll.LoadLibrary(Config.RUST_LIB_PATH)
 
 # Define the return type and argument types for the Rust function
 rust_lib.get_matches_c.argtypes = [c_char_p, c_char_p, c_char_p, c_int]
@@ -38,7 +37,7 @@ def get_matches(
 
 def main(
     json_file: Path = typer.Option(
-        db_file, "-j", "--json-file", exists=True, help="JSON DB file"
+        Config.AVERAGE_HASH_DB, "-j", "--json-file", exists=True, help="JSON DB file"
     ),
     custom_file: Optional[Path] = typer.Option(
         None, "-c", "--custom-file", exists=True, help="Custom file"

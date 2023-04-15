@@ -14,13 +14,7 @@ except AttributeError:
     # https://pillow.readthedocs.io/en/stable/deprecations.html
     ANTIALIAS = Image.ANTIALIAS
 
-HERE = Path(__file__).parent
-
-img_folder = HERE / "images"
-image_paths = [str(path) for path in img_folder.glob("*.jpg")]
-
-hash_size = 16
-db_file = HERE / f"average_hash_db_{hash_size}.json"
+from config import Config
 
 
 class Match(TypedDict):
@@ -30,13 +24,13 @@ class Match(TypedDict):
 
 def path_to_hash(image_path: str | Path) -> str:
     img = Image.open(image_path)
-    return average_hash(img, hash_size)
+    return average_hash(img, Config.HASH_SIZE)
 
 
 def bytes_to_hash(data: bytes) -> str:
     img_file = io.BytesIO(data)
     img = Image.open(img_file)
-    return average_hash(img, hash_size)
+    return average_hash(img, Config.HASH_SIZE)
 
 
 def average_hash(img: Image.Image, hash_size: int) -> str:

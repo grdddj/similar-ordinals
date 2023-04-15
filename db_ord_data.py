@@ -2,7 +2,7 @@ from typing import Iterator
 
 from sqlmodel import Field, Index, Session, SQLModel, UniqueConstraint, create_engine
 
-db_location = "ord_data.db"
+from config import Config
 
 
 def get_session() -> Session:
@@ -11,7 +11,7 @@ def get_session() -> Session:
 
 
 def get_engine():
-    return create_engine(f"sqlite:///{db_location}", echo=False)
+    return create_engine(f"sqlite:///{Config.ORD_DB}", echo=False)
 
 
 class InscriptionModel(SQLModel, table=True):

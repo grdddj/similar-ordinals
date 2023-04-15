@@ -7,7 +7,8 @@ from typing import Iterator, Optional
 import orjson  # quicker in parsing the file than json
 import typer
 
-from common import Match, db_file, path_to_hash
+from common import Match, path_to_hash
+from config import Config
 
 HERE = Path(__file__).parent
 
@@ -54,7 +55,7 @@ def get_matches_from_data(
 
 def main(
     json_file: Path = typer.Option(
-        db_file, "-j", "--json-file", exists=True, help="JSON DB file"
+        Config.AVERAGE_HASH_DB, "-j", "--json-file", exists=True, help="JSON DB file"
     ),
     custom_file: Optional[Path] = typer.Option(
         None, "-c", "--custom-file", exists=True, help="Custom file"
