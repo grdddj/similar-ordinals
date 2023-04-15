@@ -82,7 +82,7 @@ def process_batch(limit: int, from_number: int, to_number: int) -> None:
         #     continue
 
         # Get content from another endpoint
-        ord_id = entry["number"]
+        ord_id: int = entry["number"]
         content_data = get_ord_id_content(ord_id)
 
         # Try to get average hashes for all the images
@@ -98,8 +98,8 @@ def process_batch(limit: int, from_number: int, to_number: int) -> None:
                 )
 
         # Save content to db if not there already
-        if files_db_session.query(ByteData).get(str(ord_id)) is None:
-            byte_data = ByteData(id=str(ord_id), data=content_data)
+        if files_db_session.query(ByteData).get(entry["tx_id"]) is None:
+            byte_data = ByteData(id=entry["tx_id"], data=content_data)
             files_db_session.add(byte_data)
 
         # Save ord_data to db if not there already
