@@ -100,9 +100,7 @@ def do_by_ord_id(ord_id: int, top_n: int = 20) -> list[dict]:
     if USE_ORD_ID_INDEX:
         matches: list[Match] = [
             {"ord_id": str(match_ord_id), "match_sum": match_sum}
-            for match_ord_id, match_sum in SimilarityIndex.list_by_id(ord_id)[
-                :top_n
-            ]
+            for match_ord_id, match_sum in SimilarityIndex.list_by_id(ord_id)[:top_n]
         ]
     else:
         try:
@@ -140,3 +138,17 @@ def do_by_custom_file(file_bytes: bytes, top_n: int = 20) -> list[dict]:
         load_average_hash_data_if_not_there()
         matches = get_matches_from_data(average_hash_data, None, file_hash, top_n)
     return [get_full_inscription_result(match) for match in matches[:top_n]]
+
+
+# curl http://localhost:8001/
+@app.get("/")
+async def get_docs(request: Request):
+    try:
+        request_id = generate_random_id()
+        logging.info(f"DOCS - req_id: {request_id}, HOST: {get_client_ip(request)}")
+        return {
+            "docs": "Go to https://github.com/grdddj/similar-ordinals#api to see the API docs and supported endpoints"
+        }
+    except Exception as e:
+        logging.exception(f"Error: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
