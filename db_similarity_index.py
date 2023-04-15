@@ -27,7 +27,6 @@ class SimilarityIndex(SQLModel, table=True):
         with get_session() as session:
             return session.query(SimilarityIndex).get(id) is not None
 
-
     @classmethod
     def list_by_id(cls, id: int) -> list[list[int]]:
         with get_session() as session:

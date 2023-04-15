@@ -55,6 +55,7 @@ def main() -> None:
         ord_id = inscr.id
         try:
             content = get_data(inscr.tx_id)
+            assert content is not None
             average_hash = bytes_to_hash(content)
             new_average_hashes[str(ord_id)] = average_hash
             save_new_avg_hash(str(ord_id), average_hash)
