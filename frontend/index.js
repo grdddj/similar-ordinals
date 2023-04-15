@@ -247,8 +247,8 @@ window.addEventListener("click", function(event) {
 
 // Keyboard shortcuts
 document.addEventListener("keydown", function(event) {
-    // Pressing F key (FIND) will trigger the ordID input
-    if (event.key === "f") {
+    // Pressing C key (CHOOSE) will trigger the ordID input
+    if (event.key === "c") {
         openOrdIdChoicePopup();
         event.preventDefault();
         return;
