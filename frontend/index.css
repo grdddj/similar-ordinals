@@ -241,3 +241,52 @@ footer {
 footer p {
     margin: 0;
 }
+.custom-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 9999;
+  display: none;
+}
+
+.popup-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: white;
+  padding: 50px;
+  
+  text-align: center;
+  border-radius: 10px;
+  font-family: "Anuphan";
+}
+
+.popup-content h2 {
+  margin-top: 0;
+}
+
+.popup-content input {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 5px;
+  border: 5px;
+  
+  font-size: 20px;
+  font-family: "Anuphan";
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+
+.popup-content button{
+  margin-top: 10%;
+}
+
+
+.popup-content button:hover {
+  background-color: beige;
+}

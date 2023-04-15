@@ -44,44 +44,7 @@ function submitImage() {
         });
 }
 
-function chooseOrdID() {
-    const ordID = prompt("Please enter the Ordinal ID:");
 
-    // User cancelled the prompt
-    if (ordID == null || ordID == "") {
-        return;
-    }
-    // User entered nothing
-    if (ordID == "") {
-        alert("Please enter the Ordinal ID.");
-        return;
-    }
-    // User did not enter a valid number
-    if (isNaN(ordID)) {
-        alert("Please enter a valid Ordinal ID - a number.");
-        return;
-    }
-
-    fetch('https://api.ordsimilarity.com/ord_id/' + ordID)
-        .then(response => response.json())
-        .then(data => {
-            if (data.result.length == 0) {
-                alert("Given Ordinal ID is not a valid picture.");
-                return;
-            }
-            // Show the results
-            updateResults(data, ordID);
-            // Show the chosen picture
-            const chosenItem = data.result.find(item => item.id == ordID);
-            if (chosenItem) {
-                fill_chosen_picture(chosenItem.hiro_content_link, chosenItem);
-            }
-        })
-        .catch(error => {
-            console.error(error);
-            alert("Error when getting data. We apologize, please try later.");
-        });
-}
 
 function fill_chosen_picture(src, chosenItem) {
     const chosenPic = document.getElementById('chosen-picture');
@@ -202,3 +165,68 @@ function addItemDetailsPopupToCard(cardDiv, item) {
         popupContainer.style.display = 'flex';
     });
 }
+
+function openCustomPopup() {
+    // Get the custom popup element
+    const customPopup = document.getElementById("customPopup");
+    // Display the custom popup
+    customPopup.style.display = "block";
+  }
+  
+  function closeCustomPopup() {
+    // Get the custom popup element
+    const customPopup = document.getElementById("customPopup");
+    // Hide the custom popup
+    customPopup.style.display = "none";
+  }
+  
+  function chooseOrdID() {
+    // Get the input element
+    const ordinalInput = document.getElementById("ordinalInput");
+    const ordID = ordinalInput.value;
+  
+    // User cancelled the prompt
+    if (ordID == null || ordID == "") {
+      return;
+    }
+  
+    // User did not enter a valid number
+    if (isNaN(ordID)) {
+      alert("Please enter a valid Ordinal ID - a number.");
+      return;
+    }
+  
+    fetch("https://api.ordsimilarity.com/ord_id/" + ordID)
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.result.length == 0) {
+          alert("Given Ordinal ID is not a valid picture.");
+          return;
+        }
+        // Show the results
+        updateResults(data, ordID);
+        // Show the chosen picture
+        const chosenItem = data.result.find((item) => item.id == ordID);
+        if (chosenItem) {
+          fill_chosen_picture(chosenItem.hiro_content_link, chosenItem);
+        }
+        // Close the custom popup
+        closeCustomPopup();
+      })
+      .catch((error) => {
+        console.error(error);
+        alert(
+          "Error when getting data. We apologize, please try later."
+        );
+        // Close the custom popup
+        closeCustomPopup();
+      });
+  }
+
+  window.addEventListener("click", function(event) {
+    const customPopup = document.getElementById("customPopup");
+    if (event.target == customPopup) {
+      closeCustomPopup();
+    }
+  });
+  
