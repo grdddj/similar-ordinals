@@ -44,8 +44,6 @@ function submitImage() {
         });
 }
 
-
-
 function fill_chosen_picture(src, chosenItem) {
     const chosenPic = document.getElementById('chosen-picture');
     let firstLine = '';
@@ -72,7 +70,6 @@ function fill_chosen_picture(src, chosenItem) {
         addItemDetailsPopupToCard(cardDiv, chosenItem);
     }
 }
-
 
 function updateResults(new_data, chosenOrdID) {
     // Load everything into dictionary for faster lookup per ID
@@ -209,6 +206,10 @@ function chooseOrdID() {
         return;
     }
 
+    getOrdIdResults(ordID);
+}
+
+function getOrdIdResults(ordID) {
     fetch("https://api.ordsimilarity.com/ord_id/" + ordID)
         .then((response) => response.json())
         .then((data) => {
@@ -227,6 +228,8 @@ function chooseOrdID() {
             closeCustomPopup();
             // Clear the input
             ordinalInput.value = "";
+            // Update the URL to contain ord_id=ordID parameter
+            updateURLWithQueryParam("ord_id", ordID);
         })
         .catch((error) => {
             console.error(error);
@@ -236,6 +239,12 @@ function chooseOrdID() {
             // Close the custom popup
             closeCustomPopup();
         });
+}
+
+function updateURLWithQueryParam(name, value) {
+    const url = new URL(window.location.href);
+    url.searchParams.set(name, value);
+    window.history.pushState({}, "", url);
 }
 
 window.addEventListener("click", function(event) {
@@ -274,3 +283,13 @@ document.addEventListener("keydown", function(event) {
         }
     }
 });
+
+// Look at the URL parameters and possibly do some actions
+window.onload = function() {
+    const queryParams = new URLSearchParams(window.location.search);
+    // Get results from ord_id=XXX
+    const ordID = queryParams.get('ord_id');
+    if (ordID) {
+        getOrdIdResults(ordID);
+    }
+};
