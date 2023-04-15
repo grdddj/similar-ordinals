@@ -11,3 +11,4 @@ helpers
 !requirements.txt
 nohup.out
 deploy*.sh
+config.py

@@ -4,7 +4,7 @@ import json
 
 from sqlmodel import Field, Session, SQLModel, create_engine
 
-db_location = "similarity_index.db"
+from config import Config
 
 
 def get_session() -> Session:
@@ -13,7 +13,7 @@ def get_session() -> Session:
 
 
 def get_engine():
-    return create_engine(f"sqlite:///{db_location}", echo=False)
+    return create_engine(f"sqlite:///{Config.SIMILARITY_INDEX_DB}", echo=False)
 
 
 class SimilarityIndex(SQLModel, table=True):

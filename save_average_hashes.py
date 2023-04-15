@@ -4,7 +4,8 @@ import json
 import logging
 from pathlib import Path
 
-from common import bytes_to_hash, db_file
+from common import bytes_to_hash
+from config import Config
 from db_files import get_data
 from db_ord_data import get_all_image_inscriptions_iter
 
@@ -37,7 +38,7 @@ def main() -> None:
     except KeyboardInterrupt:
         pass
     finally:
-        with open(db_file, "w") as f:
+        with open(Config.AVERAGE_HASH_DB, "w") as f:
             results = {"data": avg_hashes}
             json.dump(results, f, indent=1)
 

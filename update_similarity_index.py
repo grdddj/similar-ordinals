@@ -2,7 +2,7 @@ import json
 import logging
 from pathlib import Path
 
-from common import db_file
+from config import Config
 from db_similarity_index import SimilarityIndex, get_highest_id
 from get_matches import get_matches_from_data
 
@@ -19,7 +19,7 @@ logging.basicConfig(
 highest_indexed_id = get_highest_id()
 logging.info(f"highest_indexed_id {highest_indexed_id}")
 
-with open(db_file, "r") as f:
+with open(Config.AVERAGE_HASH_DB, "r") as f:
     data = json.load(f)["data"]
 
 already_indexed_data = {k: v for k, v in data.items() if int(k) <= highest_indexed_id}

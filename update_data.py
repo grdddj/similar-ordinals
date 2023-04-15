@@ -8,7 +8,8 @@ from pathlib import Path
 
 import requests  # type: ignore
 
-from common import bytes_to_hash, db_file
+from common import bytes_to_hash
+from config import Config
 from db_files import ByteData
 from db_files import get_session as get_files_session
 from db_ord_data import InscriptionModel
@@ -32,12 +33,12 @@ new_average_hashes: dict[str, str] = {}
 
 
 def get_current_data() -> dict[str, str]:
-    with open(db_file) as f:
+    with open(Config.AVERAGE_HASH_DB) as f:
         return json.load(f)["data"]
 
 
 def save_new_data(new_data: dict[str, str]) -> None:
-    with open(db_file, "w") as f:
+    with open(Config.AVERAGE_HASH_DB, "w") as f:
         results = {"data": new_data}
         json.dump(results, f, indent=1)
 

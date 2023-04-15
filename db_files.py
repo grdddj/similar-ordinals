@@ -2,8 +2,7 @@ from __future__ import annotations
 
 from sqlmodel import Field, Index, Session, SQLModel, create_engine
 
-db_location = "ord_files.db"
-db_location = "/mnt/c/Users/musil/Downloads/ord_content_data.db"
+from config import Config
 
 
 def get_session() -> Session:
@@ -12,7 +11,7 @@ def get_session() -> Session:
 
 
 def get_engine():
-    return create_engine(f"sqlite:///{db_location}", echo=False)
+    return create_engine(f"sqlite:///{Config.FILE_DB}", echo=False)
 
 
 class ByteData(SQLModel, table=True):
