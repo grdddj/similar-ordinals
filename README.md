@@ -2,6 +2,8 @@
 
 This project focuses on creating a service that displays similar ordinal pictures.
 
+Its `UI` is available at [https://ordsimilarity.com/](https://ordsimilarity.com/). The `API` (details below) is available at [https://api.ordsimilarity.com](https://api.ordsimilarity.com).
+
 The pictures are classified using the `average hash` algorithm, which converts them into a bit sequence of 0s and 1s. They are then compared using the `Hamming distance`, which measures how many bits are common between two pictures. A detailed description can be found at [this link](https://www.hackerfactor.com/blog/index.php?/archives/432-Looks-Like-It.html).
 
 The average hashes of all ordinals are stored in a `JSON` file. Example data can be seen in [`average_hash_example.json`](average_hash_example.json).
