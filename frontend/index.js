@@ -171,6 +171,16 @@ function openOrdIdChoicePopup() {
     const customPopup = document.getElementById("customPopup");
     // Display the custom popup
     customPopup.style.display = "block";
+    // Bringing cursor focus to the input field so user can write immediately
+    const ordinalInput = document.getElementById("ordinalInput")
+    ordinalInput.focus();
+    // Pressing enter will submit the form
+    ordinalInput.addEventListener("keyup", function(event) {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            chooseOrdID();
+        }
+    });
 }
 
 function closeCustomPopup() {
@@ -232,5 +242,35 @@ window.addEventListener("click", function(event) {
     const customPopup = document.getElementById("customPopup");
     if (event.target == customPopup) {
         closeCustomPopup();
+    }
+});
+
+// Keyboard shortcuts
+document.addEventListener("keydown", function(event) {
+    // Pressing F key (FIND) will trigger the ordID input
+    if (event.key === "f") {
+        openOrdIdChoicePopup();
+        event.preventDefault();
+        return;
+    }
+    // Pressing U (UPLOAD) key will trigger the upload input
+    if (event.key === "u") {
+        selectImage();
+        event.preventDefault();
+        return;
+    }
+    // Pressing Esc will go away from the popup
+    if (event.key === "Escape") {
+        const popupContainer = document.getElementById("popup-container");
+        const customPopup = document.getElementById("customPopup");
+        if (popupContainer.style.display !== 'none') {
+            popupContainer.style.display = 'none';
+            event.preventDefault();
+            return;
+        } else if (customPopup.style.display !== 'none') {
+            customPopup.style.display = 'none';
+            event.preventDefault();
+            return;
+        }
     }
 });
