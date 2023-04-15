@@ -147,7 +147,8 @@ async def get_docs(request: Request):
         request_id = generate_random_id()
         logging.info(f"DOCS - req_id: {request_id}, HOST: {get_client_ip(request)}")
         return {
-            "docs": "Go to https://github.com/grdddj/similar-ordinals#api to see the API docs and supported endpoints"
+            "docs": "Go to https://github.com/grdddj/similar-ordinals#api to see the API docs and supported endpoints",
+            "example": "Get 10 most similar ordinals to the ordinal with ID 0: https://api.ordsimilarity.com/ord_id/0?top_n=10",
         }
     except Exception as e:
         logging.exception(f"Error: {e}")
