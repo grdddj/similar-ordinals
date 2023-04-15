@@ -10,3 +10,4 @@ helpers
 *.txt
 !requirements.txt
 nohup.out
+deploy*.sh
