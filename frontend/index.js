@@ -39,6 +39,9 @@ function submitImage() {
         })
         .catch(error => {
             console.error(error);
+            alert(
+                "Error when getting data. We apologize, please try later."
+            );
             // Hide the loading popup
             popup.style.display = "none";
         });
@@ -60,8 +63,8 @@ function fill_chosen_picture(src, chosenItem) {
     const cardDiv = document.createElement('cardD');
     cardDiv.className = 'card';
     cardDiv.innerHTML = `<img src="${src}">
-                <p class = "text1"><strong>${firstLine}</strong></p>
-                <p class = "text1">${secondLine}</p>`;
+                <p class = "cardText"><strong>${firstLine}</strong></p>
+                <p class = "cardText">${secondLine}</p>`;
     chosenPic.innerHTML = '';
     chosenPic.appendChild(cardDiv);
 
@@ -102,8 +105,8 @@ function updateResults(new_data, chosenOrdID) {
 
         output += `<div class="card" ${red} ord-id="${item.id}">
                  <img src="${item.hiro_content_link}">
-                 <p class="text1"><strong>Ordinal ID: </strong>${item.id}</p>
-                 <p class="text1"><strong>Similarity: </strong>${similarity}</p>
+                 <p class="cardText"><strong>Ordinal ID: </strong>${item.id}</p>
+                 <p class="cardText"><strong>Similarity: </strong>${similarity}</p>
                </div>`;
     });
 
