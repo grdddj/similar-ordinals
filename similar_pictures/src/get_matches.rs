@@ -1,4 +1,4 @@
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::fs::File;
 use std::io::{BufReader, Read};
@@ -13,6 +13,11 @@ struct MatchItem {
     match_sum: usize,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+struct Db {
+    data: HashMap<String, String>,
+}
+
 const CHUNK_SIZE: usize = 30;
 const TOP_N: usize = 20;
 
@@ -24,12 +29,12 @@ pub fn get_matches(file_path: String, ord_id: Option<String>, file_hash: Option<
     reader.read_to_string(&mut content)
         .expect("Unable to read the file content");
 
-    let json_data: Value = serde_json::from_str(&content).expect("Unable to parse JSON");
+    let db: Db = serde_json::from_str(&content).expect("Unable to parse JSON");
     
     // If ord ID is provided, use it, otherwise use the file hash
     let file_hash = if let Some(ord_id) = ord_id {
-        if let Some(value) = json_data.get(ord_id) {
-            value.as_str().expect("Hash is not string").to_string()
+        if let Some(value) = db.data.get(&ord_id) {
+            value.to_string()
         } else {
             return "[]".to_string();
         }
@@ -40,17 +45,13 @@ pub fn get_matches(file_path: String, ord_id: Option<String>, file_hash: Option<
     };
 
     let mut matches: Vec<MatchItem> = Vec::new();
-    if let Value::Object(data_map) = json_data {
-        for (ord_id, hash_value) in data_map {
-            if let Value::String(hash) = hash_value {
-                let match_sum = file_hash
-                    .chars()
-                    .zip(hash.chars())
-                    .filter(|(c1, c2)| c1 == c2)
-                    .count();
-                matches.push(MatchItem { ord_id, match_sum });
-            }
-        }
+    for (ord_id, hash) in db.data {
+        let match_sum = file_hash
+            .chars()
+            .zip(hash.chars())
+            .filter(|(c1, c2)| c1 == c2)
+            .count();
+        matches.push(MatchItem { ord_id, match_sum });
     }
 
     matches.sort_by(|a, b| b.match_sum.cmp(&a.match_sum));
