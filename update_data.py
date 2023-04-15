@@ -124,6 +124,7 @@ def process_batch(limit: int, from_number: int, to_number: int) -> None:
                 genesis_fee=int(entry["genesis_fee"]),
                 genesis_height=entry["genesis_block_height"],
                 output_value=int(entry["value"]),
+                sat_index=0,
             )
             ord_data_session.add(inscr)
 
