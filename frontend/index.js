@@ -105,7 +105,7 @@ function updateResults(new_data, chosenOrdID) {
 
         output += `<div class="card" ${red} ord-id="${item.id}">
                  <img src="${item.hiro_content_link}">
-                 <button class="id-btn">Ordinal ID: ${item.id}</button>
+                 <p class="text1"><strong>Ordinal ID: </strong>${item.id}</p>
                  <p class="text1"><strong>Similarity: </strong>${similarity}</p>
                </div>`;
     });
