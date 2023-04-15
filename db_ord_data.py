@@ -28,6 +28,7 @@ class InscriptionModel(SQLModel, table=True):
     genesis_fee: int = Field(nullable=False)
     genesis_height: int = Field(nullable=False)
     output_value: int = Field(nullable=False)
+    sat_index: int = Field(nullable=False)
 
     __table_args__ = (
         UniqueConstraint("tx_id", name="uq_tx_id"),  # secondary key to tx_id
@@ -83,6 +84,16 @@ def get_all_image_inscriptions_iter() -> Iterator[InscriptionModel]:
     session = get_session()
     yield from session.query(InscriptionModel).filter(
         InscriptionModel.content_type.like("image/%")  # type: ignore
+    ).yield_per(100)
+
+
+def get_all_image_inscriptions_iter_bigger_than(
+    min_id: int,
+) -> Iterator[InscriptionModel]:
+    session = get_session()
+    yield from session.query(InscriptionModel).filter(
+        InscriptionModel.content_type.like("image/%"),  # type: ignore
+        InscriptionModel.id > min_id,
     ).yield_per(100)
 
 
