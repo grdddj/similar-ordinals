@@ -109,6 +109,11 @@ def do_by_ord_id(ord_id: int, top_n: int = 20) -> list[dict]:
             logging.error(f"Error from Rust server: {e}")
             load_average_hash_data_if_not_there()
             matches = get_matches_from_data(average_hash_data, str(ord_id), None, top_n)
+    # We must make sure that the requested ord_id is in the results
+    # (it may not be, when there is a lot of duplicates)
+    if matches and ord_id not in [int(match["ord_id"]) for match in matches]:
+        matches.pop()
+        matches.append({"ord_id": str(ord_id), "match_sum": 256})
     return [get_full_inscription_result(match) for match in matches[:top_n]]
 
 
