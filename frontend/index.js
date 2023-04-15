@@ -47,8 +47,18 @@ function submitImage() {
 function chooseOrdID() {
     const ordID = prompt("Please enter the Ordinal ID:");
 
-    // User cancelled the prompt or entered nothing
+    // User cancelled the prompt
     if (ordID == null || ordID == "") {
+        return;
+    }
+    // User entered nothing
+    if (ordID == "") {
+        alert("Please enter the Ordinal ID.");
+        return;
+    }
+    // User did not enter a valid number
+    if (isNaN(ordID)) {
+        alert("Please enter a valid Ordinal ID - a number.");
         return;
     }
 
@@ -56,7 +66,7 @@ function chooseOrdID() {
         .then(response => response.json())
         .then(data => {
             if (data.result.length == 0) {
-                alert("Given Ordinal ID is not a picture.");
+                alert("Given Ordinal ID is not a valid picture.");
                 return;
             }
             // Show the results
