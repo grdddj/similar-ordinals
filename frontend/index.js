@@ -165,9 +165,9 @@ function addItemDetailsPopupToCard(cardDiv, item) {
 
 function openOrdIdChoicePopup() {
     // Get the custom popup element
-    const customPopup = document.getElementById("customPopup");
+    const ordIdInputPopup = document.getElementById("ordIdInputPopup");
     // Display the custom popup
-    customPopup.style.display = "block";
+    ordIdInputPopup.style.display = "block";
     // Bringing cursor focus to the input field so user can write immediately
     const ordinalInput = document.getElementById("ordinalInput")
     ordinalInput.focus();
@@ -180,11 +180,11 @@ function openOrdIdChoicePopup() {
     });
 }
 
-function closeCustomPopup() {
+function closeOrdIdPopup() {
     // Get the custom popup element
-    const customPopup = document.getElementById("customPopup");
+    const ordIdInputPopup = document.getElementById("ordIdInputPopup");
     // Hide the custom popup
-    customPopup.style.display = "none";
+    ordIdInputPopup.style.display = "none";
 }
 
 function chooseOrdID() {
@@ -224,21 +224,28 @@ function getOrdIdResults(ordID) {
             if (chosenItem) {
                 fill_chosen_picture(chosenItem.hiro_content_link, chosenItem);
             }
-            // Close the custom popup
-            closeCustomPopup();
+            // Close the input
+            closeOrdIdPopup();
             // Clear the input
             ordinalInput.value = "";
             // Update the URL to contain ord_id=ordID parameter
             updateURLWithQueryParam("ord_id", ordID);
+            // Showing the trivia funny facts
+            enableTriviaFooter();
         })
         .catch((error) => {
             console.error(error);
             alert(
                 "Error when getting data. We apologize, please try later."
             );
-            // Close the custom popup
-            closeCustomPopup();
+            // Close the input popup
+            closeOrdIdPopup();
         });
+}
+
+function enableTriviaFooter() {
+    const triviaFooter = document.getElementById("trivia");
+    triviaFooter.style.display = "block";
 }
 
 function updateURLWithQueryParam(name, value) {
@@ -248,9 +255,9 @@ function updateURLWithQueryParam(name, value) {
 }
 
 window.addEventListener("click", function(event) {
-    const customPopup = document.getElementById("customPopup");
-    if (event.target == customPopup) {
-        closeCustomPopup();
+    const ordIdInputPopup = document.getElementById("ordIdInputPopup");
+    if (event.target == ordIdInputPopup) {
+        closeOrdIdPopup();
     }
 });
 
@@ -271,13 +278,13 @@ document.addEventListener("keydown", function(event) {
     // Pressing Esc will go away from the popup
     if (event.key === "Escape") {
         const popupContainer = document.getElementById("popup-container");
-        const customPopup = document.getElementById("customPopup");
+        const ordIdInputPopup = document.getElementById("ordIdInputPopup");
         if (popupContainer.style.display !== 'none') {
             popupContainer.style.display = 'none';
             event.preventDefault();
             return;
-        } else if (customPopup.style.display !== 'none') {
-            customPopup.style.display = 'none';
+        } else if (ordIdInputPopup.style.display !== 'none') {
+            ordIdInputPopup.style.display = 'none';
             event.preventDefault();
             return;
         }
