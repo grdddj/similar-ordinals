@@ -30,13 +30,19 @@ def get_matches_from_data(
         file_hash = data[ord_id]
     assert file_hash is not None
 
-    file_int = int(file_hash, 2)
+    hash_length = len(file_hash)
+    file_hash_int = int(file_hash, 2)
 
     def match_generator() -> Iterator[tuple[str, int]]:
         for file_name, hash in data.items():
+            # Comparing the string hashes by converting them to integers
+            # and counting the number of different bits
             hash_int = int(hash, 2)
-            xor_result = file_int ^ hash_int
-            match_sum = bin(xor_result).count("0")
+            different_bit_int = file_hash_int ^ hash_int
+            different_bit_count = bin(different_bit_int).count("1")
+            same_bit_count = hash_length - different_bit_count
+            # Also accounting for inversed matches - e.g. 11111111 and 00000000
+            match_sum = max(same_bit_count, different_bit_count)
             yield file_name, match_sum
 
     best_matches = heapq.nlargest(top_n, match_generator(), key=lambda x: x[1])
