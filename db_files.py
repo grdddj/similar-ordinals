@@ -26,6 +26,12 @@ class ByteData(SQLModel, table=True):
         Index("ix_byte_data_id", "id", unique=True),
     )
 
+    def __repr__(self) -> str:
+        return f"<ByteData({self.id}, {len(self.data)})>"
+
+    def __str__(self) -> str:
+        return self.__repr__()
+
 
 def get_data(tx_id: str) -> bytes | None:
     session = get_session()
