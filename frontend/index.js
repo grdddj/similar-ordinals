@@ -17,14 +17,18 @@ function selectImage() {
 }
 
 function submitImage() {
+    // If the loading is already shown, not send another request
+    const popup = document.getElementById('loadingPopup');
+    if (popup.style.display === 'block') {
+        return;
+    }
+    // Show the loading popup
+    popup.style.display = "block";
+
     const input = document.getElementById('fileInput');
     const file = input.files[0];
     const formData = new FormData();
     formData.append('file', file);
-
-    // Show the loading popup
-    const popup = document.getElementById('loadingPopup');
-    popup.style.display = "block";
 
     fetch('https://api.ordsimilarity.com/file', {
             method: 'POST',
@@ -41,7 +45,7 @@ function submitImage() {
             console.error(error);
             alert(
                 "Error when getting data. We apologize, please try later."
-            );
+                );
             // Hide the loading popup
             popup.style.display = "none";
         });
@@ -174,13 +178,6 @@ function openOrdIdChoicePopup() {
     // Bringing cursor focus to the input field so user can write immediately
     const ordinalInput = document.getElementById("ordinalInput")
     ordinalInput.focus();
-    // Pressing enter will submit the form
-    ordinalInput.addEventListener("keyup", function(event) {
-        if (event.key === "Enter") {
-            event.preventDefault();
-            chooseOrdID();
-        }
-    });
 }
 
 function closeOrdIdPopup() {
@@ -213,11 +210,27 @@ function chooseOrdID() {
 }
 
 function getOrdIdResults(ordID) {
+    const popup = document.getElementById('loadingPopup');
+    // If the loading is already shown, not send another request
+    if (popup.style.display === 'block') {
+        return;
+    }
+
+    // Show the loading popup
+    popup.style.display = "block";
+
+    // Close the input
+    closeOrdIdPopup();
+
     fetch("https://api.ordsimilarity.com/ord_id/" + ordID)
         .then((response) => response.json())
         .then((data) => {
             if (data.result.length == 0) {
                 alert("Given Ordinal ID is not a valid picture.");
+                // Hide the loading popup
+                popup.style.display = "none";
+                // Open the input again so user can correct it
+                openOrdIdChoicePopup();
                 return;
             }
             // Show the results
@@ -227,14 +240,17 @@ function getOrdIdResults(ordID) {
             if (chosenItem) {
                 fill_chosen_picture(chosenItem.hiro_content_link, chosenItem);
             }
-            // Close the input
-            closeOrdIdPopup();
             // Clear the input
             ordinalInput.value = "";
             // Update the URL to contain ord_id=ordID parameter
             updateURLWithQueryParam("ord_id", ordID);
             // Showing the trivia funny facts
             enableTriviaFooter();
+            // Scrolling the view to see the beginning of results
+            const chosenPicture = document.getElementById('chosen-picture');
+            chosenPicture.scrollIntoView({ behavior: 'smooth' });
+            // Hide the loading popup
+            popup.style.display = "none";
         })
         .catch((error) => {
             console.error(error);
@@ -243,6 +259,8 @@ function getOrdIdResults(ordID) {
             );
             // Close the input popup
             closeOrdIdPopup();
+            // Hide the loading popup
+            popup.style.display = "none";
         });
 }
 
@@ -290,6 +308,14 @@ document.addEventListener("keydown", function(event) {
             ordIdInputPopup.style.display = 'none';
             event.preventDefault();
             return;
+        }
+    }
+    // Pressing enter will submit the form when focus is on the input
+    if (event.key === "Enter") {
+        const ordinalInput = document.getElementById("ordinalInput")
+        if (document.activeElement === ordinalInput) {
+            event.preventDefault();
+            chooseOrdID();
         }
     }
 });
