@@ -1,4 +1,5 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
   <head>
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-V5LNH6N0M2"></script>
@@ -21,59 +22,70 @@
   </head>
 
   <body>
-    <div class="main">
-      <p class="title1">OrdSimilarity</p>
-      <p class="subtitle">differentiate your ordinals!</p>
-    </div>
+    <div class="content">
 
-    <button id="uploadButton" class="upload" onclick="selectImage()">
-      Upload your Ordinal picture
-    </button>
-    <input type="file" id="fileInput" style="display: none" />
-
-    <br>
-    
-    <button id="ordIDButton" onclick="chooseOrdID()">
-      Choose an Ordinal ID
-    </button>
-
-    <div id="loadingPopup" class="popup">
-      <div class="popupContent">
-        <div class="loader"></div>
-        <p class="loadingg">Loading...</p>
+      <div class="main">
+        <p class="title1">OrdSimilarity</p>
+        <p class="subtitle">differentiate your ordinals!</p>
       </div>
-    </div>
-
-    <div id="chosen-picture">
-      <!-- To be filled -->
-    </div>
-    
-    <div id="results" style="display: none">
-      <h1>Similar ones</h1>
-      <div class="card-container" id="result"></div>
-      <div id="popup-container">
-        <div id="popupDetails">      
-          <button id="close-btn">Close</button>
+  
+      <button id="uploadButton" class="upload" onclick="selectImage()">
+        Upload your Ordinal picture
+      </button>
+      <input type="file" id="fileInput" style="display: none" />
+  
+      <br>
+      
+      <button id="ordIDButton" onclick="chooseOrdID()">
+        Choose an Ordinal ID
+      </button>
+  
+      <div id="loadingPopup" class="popup">
+        <div class="popupContent">
+          <div class="loader"></div>
+          <p class="loadingg">Loading...</p>
         </div>
       </div>
-    </div>
+  
+      <div id="chosen-picture">
+        <!-- To be filled -->
+      </div>
+      
+      <div id="results" style="display: none">
+        <h1>Similar ones</h1>
+        <div class="card-container" id="result"></div>
+        <div id="popup-container">
+          <div id="popupDetails">      
+            <!-- To be filled -->
+          </div>
+        </div>
+      </div>
+
+    </div>  
 
     <script>
       const popupContainer = document.getElementById("popup-container");
-      const closeBtn = document.getElementById("close-btn");
-
       // Close the popup when the user clicks outside of it
       window.onclick = function(event) {
         if (event.target === popupContainer) {
           popupContainer.style.display = "none";
         }
       }
-
-      // Close the popup when the user clicks the close button
-      closeBtn.onclick = function() {
-        popupContainer.style.display = "none";
-      }
     </script>
+
+    <footer>
+      <p>
+        <span>Created by </span>
+        <a href="https://github.com/grdddj" target="_blank">grdddj,</a>
+        <span> UI design by </span>
+        <a href="https://github.com/Arsalaan-Alam" target="_blank">Arsalaan Alam</a>
+      </p>
+      <p>
+        <span>Feel free to</span>
+        <a href="https://github.com/grdddj/similar-ordinals/issues/new" target="_blank"> create an issue </a>
+        <span>on Github</span>
+      </p>
+    </footer>
 
   </body>
 </html>
