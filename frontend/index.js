@@ -186,16 +186,19 @@ function openCustomPopup() {
     const ordID = ordinalInput.value;
   
     // User cancelled the prompt
-    if (ordID == null || ordID == "") {
+    if (ordID == null) {
       return;
     }
-  
+    // User did not enter anything
+    if (ordID == "") {
+      return;
+    }
     // User did not enter a valid number
     if (isNaN(ordID)) {
       alert("Please enter a valid Ordinal ID - a number.");
       return;
     }
-  
+
     fetch("https://api.ordsimilarity.com/ord_id/" + ordID)
       .then((response) => response.json())
       .then((data) => {
@@ -212,6 +215,8 @@ function openCustomPopup() {
         }
         // Close the custom popup
         closeCustomPopup();
+        // Clear the input
+        ordinalInput.value = "";
       })
       .catch((error) => {
         console.error(error);
