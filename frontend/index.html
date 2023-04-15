@@ -36,9 +36,19 @@
   
       <br>
       
-      <button id="ordIDButton" onclick="chooseOrdID()">
+      <button id="ordIDButton" onclick="openCustomPopup()">
         Choose an Ordinal ID
       </button>
+      
+      <!-- Custom popup -->
+      <div id="customPopup" class="custom-popup">
+        <div class="popup-content">
+          <h2>Enter Ordinal ID</h2>
+          <input id="ordinalInput" type="text" placeholder="Ordinal ID">
+          <button onclick="chooseOrdID()">Submit</button>
+        </div>
+      </div>
+      
   
       <div id="loadingPopup" class="popup">
         <div class="popupContent">
