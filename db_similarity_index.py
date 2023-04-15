@@ -23,6 +23,12 @@ class SimilarityIndex(SQLModel, table=True):
     list_of_lists: str = Field(nullable=False)
 
     @classmethod
+    def is_defined(cls, id: int) -> bool:
+        with get_session() as session:
+            return session.query(SimilarityIndex).get(id) is not None
+
+
+    @classmethod
     def list_by_id(cls, id: int) -> list[list[int]]:
         with get_session() as session:
             obj = (
