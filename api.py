@@ -96,18 +96,19 @@ async def by_ord_id(request: Request, ord_id: int, top_n: int = Query(20)):
 
 
 def do_by_ord_id(ord_id: int, top_n: int = 20) -> list[dict]:
-    try:
-        matches = get_matches_from_rust_server(ord_id, None)
-    except Exception as e:
-        logging.error(f"Error from Rust server: {e}")
-        if USE_ORD_ID_INDEX:
-            matches = [
-                {"ord_id": str(match_ord_id), "match_sum": match_sum}
-                for match_ord_id, match_sum in SimilarityIndex.list_by_id(ord_id)[
-                    :top_n
-                ]
+    # Index is the fastest way to get the results - just then try Rust
+    if USE_ORD_ID_INDEX:
+        matches: list[Match] = [
+            {"ord_id": str(match_ord_id), "match_sum": match_sum}
+            for match_ord_id, match_sum in SimilarityIndex.list_by_id(ord_id)[
+                :top_n
             ]
-        else:
+        ]
+    else:
+        try:
+            matches = get_matches_from_rust_server(ord_id, None)
+        except Exception as e:
+            logging.error(f"Error from Rust server: {e}")
             load_average_hash_data_if_not_there()
             matches = get_matches_from_data(average_hash_data, str(ord_id), None, top_n)
     return [get_full_inscription_result(match) for match in matches[:top_n]]
