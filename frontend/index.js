@@ -166,7 +166,7 @@ function addItemDetailsPopupToCard(cardDiv, item) {
     });
 }
 
-function openCustomPopup() {
+function openOrdIdChoicePopup() {
     // Get the custom popup element
     const customPopup = document.getElementById("customPopup");
     // Display the custom popup
