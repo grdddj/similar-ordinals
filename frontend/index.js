@@ -175,7 +175,6 @@ function addItemDetailsPopupToCard(cardDiv, item) {
 
         const content = `
         <div id="popup-content-details">
-          <span id="close-btn">&times;</span>
   
           <div class="popup-details">
             <p><strong>ID:</strong> ${item.id}</p>
@@ -191,10 +190,5 @@ function addItemDetailsPopupToCard(cardDiv, item) {
 
         popupDetails.innerHTML = content;
         popupContainer.style.display = 'flex';
-
-        const closeBtn = document.getElementById('close-btn');
-        closeBtn.addEventListener('click', function() {
-            popupContainer.style.display = 'none';
-        });
     });
 }

@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Anuphan:wght@500&family=Montserrat:wght@800&display=swap');
 
-.title1{
+.title1 {
     font-family: 'Montserrat';
     text-align: center;
     /* margin-top: 10%; */
@@ -9,7 +9,7 @@
     font-size: 3em;
   }
   
-  .subtitle{
+  .subtitle {
     font-family: 'Anuphan';
     text-align: center;
     font-size: 2em;
@@ -18,7 +18,7 @@
     color: rgb(191, 15, 15);
 }
 
-button{
+button {
     font-family: 'Anuphan';
     border: 2px solid #000000;
     border-radius: 10px;
@@ -33,11 +33,11 @@ button{
     margin: 0 auto;
 }
 
-button:hover{
+button:hover {
     background-color: beige;
 }
 
-#filename{
+#filename {
     font-family: 'Anuphan';
     text-align: center;
     margin-top: 2.5%;
@@ -80,7 +80,7 @@ button:hover{
     100% { transform: rotate(360deg); }
   }
 
-.loadingg{
+.loadingg {
     font-family: 'Anuphan';
     color: #6012d5;
     margin-top: 40px;
@@ -195,24 +195,6 @@ h1 {
   margin-bottom: 20px;
 }
 
-
-#close-btn {
-  /* position: absolute; */
-  top: 10px;
-  right: 10px;
-  font-size: 48px;
-  font-weight: bold;
-  color: red;
-  background-color: white;
-  border: none;
-  border-radius: 10%;
-  padding: 10px;
-  padding-left: 15px;
-  padding-right: 15px;
-  cursor: pointer;
-  border: 2px black;
-}
-
 .popup-details {
   font-family: "Anuphan";
 }
@@ -223,11 +205,39 @@ h1 {
   margin: 10px 0;
 }
 
-
-
-.main{
+.main {
   margin-top: 2%;
 }
-.text1{
+
+.text1 {
   font-family: "Anuphan";
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+
+/* Ensure footer is always at the bottom */
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* Viewport Height */
+}
+
+.content {
+    flex: 1;
+}
+
+/* Style the footer */
+footer {
+    font-family: 'Anuphan';
+    background-color: #f8f9fa;
+    padding: 20px;
+    text-align: center;
+}
+
+footer p {
+    margin: 0;
 }
