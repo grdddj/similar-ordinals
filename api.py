@@ -4,8 +4,10 @@ from __future__ import annotations
 
 import json
 import logging
+import random
 import secrets
 from pathlib import Path
+from typing import Union
 
 from fastapi import FastAPI, HTTPException, Query, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
@@ -38,22 +40,12 @@ app.add_middleware(
 )
 
 USE_ORD_ID_INDEX = True
+RANDOM_ORD_ID = "random"
 
 
 # Storing the data globally, so it is immediately available for all requests
-# Not loading it right away, as Rust server should be handling this
-# Loading them as soon as the Rust server fails and we need to fallback into Python
-average_hash_data: dict[str, str] = {}
-
-
-def load_average_hash_data_if_not_there() -> None:
-    global average_hash_data
-
-    if not average_hash_data:
-        logging.info("Loading the average_hash_data from JSON")
-        with open(Config.AVERAGE_HASH_DB) as f:
-            average_hash_data = json.load(f)["data"]
-        logging.info("Finished loading average_hash_data")
+with open(Config.AVERAGE_HASH_DB) as f:
+    average_hash_data: dict[str, str] = json.load(f)["data"]
 
 
 def get_full_inscription_result(match: Match) -> dict:
@@ -82,15 +74,23 @@ def generate_random_id():
 
 # curl http://localhost:8001/ord_id/123?top_n=10
 @app.get("/ord_id/{ord_id}")
-async def by_ord_id(request: Request, ord_id: int, top_n: int = Query(20)):
+async def by_ord_id(request: Request, ord_id: Union[int, str], top_n: int = Query(20)):
     try:
         request_id = generate_random_id()
         logging.info(
             f"req_id: {request_id}, HOST: {get_client_ip(request)}, ord_id: {ord_id}, top_n: {top_n}"
         )
+        # Possibility to select a random one
+        if ord_id == RANDOM_ORD_ID:
+            ord_id = random.choice(list(average_hash_data.keys()))
+        # Check we have a valid int ord_id
+        try:
+            ord_id = int(ord_id)
+        except ValueError:
+            raise HTTPException(status_code=400, detail="ord_id must be an integer")
         result = do_by_ord_id(ord_id, top_n)
         logging.info(f"req_id: {request_id}: request finished")
-        return {"result": result}
+        return {"result": result, "ord_id": ord_id}
     except Exception as e:
         logging.exception(f"Error: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
@@ -108,7 +108,6 @@ def do_by_ord_id(ord_id: int, top_n: int = 20) -> list[dict]:
             matches = get_matches_from_rust_server(ord_id, None)
         except Exception as e:
             logging.error(f"Error from Rust server: {e}")
-            load_average_hash_data_if_not_there()
             matches = get_matches_from_data(average_hash_data, str(ord_id), None, top_n)
     # We must make sure that the requested ord_id is in the results
     # (it may not be, when there is a lot of duplicates)
@@ -141,7 +140,6 @@ def do_by_custom_file(file_bytes: bytes, top_n: int = 20) -> list[dict]:
         matches = get_matches_from_rust_server(None, file_hash)
     except Exception as e:
         logging.error(f"Error from Rust server: {e}")
-        load_average_hash_data_if_not_there()
         matches = get_matches_from_data(average_hash_data, None, file_hash, top_n)
     return [get_full_inscription_result(match) for match in matches[:top_n]]
 
