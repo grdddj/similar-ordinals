@@ -107,11 +107,15 @@ function updateResults(new_data, chosenOrdID, chosenContentHash) {
             isDuplicate = true;
         } 
 
-        let similarity = item.similarity;
+        let similarityold = item.similarity;
+        let similarity = (similarityold / 256 * 100).toFixed(2);
         let red = '';
         if (isDuplicate) {
-            similarity = "IDENTICAL";
+            similarity = "DUPLICATE";
             red = 'style="background-color: red"';
+        }
+        if (!isDuplicate) {
+            similarity = similarity + "%";
         }
 
         output += `<div class="card" ${red} ord-id="${item.id}">
