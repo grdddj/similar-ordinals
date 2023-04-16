@@ -109,21 +109,22 @@ function updateResults(new_data, chosenOrdID, chosenContentHash) {
             isDuplicate = true;
         } 
 
-        let similarityold = item.similarity;
-        let similarity = (similarityold / 256 * 100).toFixed(2);
-        let red = '';
+        let similarityScore = (item.similarity / 256 * 100).toFixed(2);
+        let redStyleOrNothing = '';
         if (isDuplicate) {
-            similarity = "DUPLICATE";
-            red = 'style="background-color: red"';
-        }
-        if (!isDuplicate) {
-            similarity = similarity + "%";
+            similarityScore = "DUPLICATE";
+            redStyleOrNothing = 'style="background-color: red"';
+        } else {
+            if (similarityScore === "100.00") {
+                similarityScore = "100";
+            }
+            similarityScore = similarityScore + " %";
         }
 
-        output += `<div class="card" ${red} ord-id="${item.id}">
+        output += `<div class="card" ${redStyleOrNothing} ord-id="${item.id}">
                  <img src="${item.hiro_content_link}">
                  <p class="cardText"><strong>Ordinal ID: </strong>${item.id}</p>
-                 <p class="cardText"><strong>Similarity: </strong>${similarity}</p>
+                 <p class="cardText"><strong>Similarity: </strong>${similarityScore}</p>
                </div>`;
     });
 
