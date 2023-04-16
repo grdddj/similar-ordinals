@@ -5,6 +5,7 @@ from pathlib import Path
 from config import Config
 from db_similarity_index import SimilarityIndex, get_highest_id, get_session
 from get_matches import get_matches_from_data
+from rust_server import get_matches_from_rust_server
 
 HERE = Path(__file__).parent
 
@@ -14,6 +15,14 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s %(message)s",
 )
+
+is_rust_server_running = True
+try:
+    get_matches_from_rust_server(ord_id=1, file_hash=None)
+    logging.info("Rust server is running")
+except Exception as e:
+    is_rust_server_running = False
+    logging.error(f"Rust server is not running {e}")
 
 
 def main():
@@ -38,9 +47,12 @@ def main():
             logging.info(f"New update progress {progress} / {len(not_indexed_data)}")
         if session.query(SimilarityIndex).get(int(ord_id)) is not None:
             continue
-        matches = get_matches_from_data(
-            data, ord_id=None, file_hash=average_hash, top_n=20
-        )
+        if is_rust_server_running:
+            matches = get_matches_from_rust_server(ord_id=None, file_hash=average_hash)
+        else:
+            matches = get_matches_from_data(
+                data, ord_id=None, file_hash=average_hash, top_n=20
+            )
         list_of_lists = [
             [int(match["ord_id"]), match["match_sum"]] for match in matches
         ]
