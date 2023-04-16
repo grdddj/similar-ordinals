@@ -95,7 +95,8 @@ function updateResults(new_data, chosenOrdID, chosenContentHash) {
     });
 
     let output = '';
-
+    console.log("chosenContentHash", chosenContentHash)
+    
     new_data.result.forEach(function(item) {
         // Not displaying the item which user chose - by ordID
         // Also, marking those pixel-perfect matches as those
@@ -103,6 +104,7 @@ function updateResults(new_data, chosenOrdID, chosenContentHash) {
             return;
         }
         let isDuplicate = false;
+        console.log("item.content_hash", item.content_hash)
         if (item.content_hash == chosenContentHash) {
             isDuplicate = true;
         } 
@@ -244,13 +246,15 @@ function getOrdIdResults(ordID) {
             if (data.hasOwnProperty("ord_id")) {
                 ordID = data.ord_id;
             }
-            // Show the results
-            updateResults(data, ordID);
-            // Show the chosen picture
+            // Show the chosen picture if we find it in the list
             const chosenItem = data.result.find((item) => item.id == ordID);
+            let chosenContentHash = null;
             if (chosenItem) {
                 fill_chosen_picture(chosenItem.hiro_content_link, chosenItem);
+                chosenContentHash = chosenItem.content_hash;
             }
+            // Show the results
+            updateResults(data, ordID, chosenContentHash);
             // Clear the input
             ordinalInput.value = "";
             // Update the URL to contain ord_id=ordID parameter
