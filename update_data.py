@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import hashlib
 import json
 import logging
 from datetime import datetime
@@ -8,7 +7,7 @@ from pathlib import Path
 
 import requests  # type: ignore
 
-from common import bytes_to_hash
+from common import bytes_to_hash, content_md5_hash
 from config import Config
 from db_files import ByteData
 from db_files import get_session as get_files_session
@@ -105,7 +104,7 @@ def process_batch(limit: int, from_number: int, to_number: int) -> None:
 
         # Save ord_data to db if not there already
         if ord_data_session.query(InscriptionModel).get(ord_id) is None:
-            content_hash = hashlib.md5(content_data).hexdigest()
+            content_hash = content_md5_hash(content_data)
             timestamp_ms = entry["timestamp"]
             unix_timestamp = timestamp_ms // 1000
             str_datetime = datetime.fromtimestamp(unix_timestamp).strftime(

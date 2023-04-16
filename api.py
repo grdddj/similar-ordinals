@@ -12,7 +12,7 @@ from typing import Union
 from fastapi import FastAPI, HTTPException, Query, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 
-from common import Match, bytes_to_hash
+from common import Match, bytes_to_hash, content_md5_hash
 from config import Config
 from db_ord_data import InscriptionModel
 from db_similarity_index import SimilarityIndex
@@ -89,8 +89,17 @@ async def by_ord_id(request: Request, ord_id: Union[int, str], top_n: int = Quer
         except ValueError:
             raise HTTPException(status_code=400, detail="ord_id must be an integer")
         result = do_by_ord_id(ord_id, top_n)
+        # get the content hash of chosen ordinal
+        chosen_ord_content_hash = ""
+        for match in result:
+            if str(match.get("id")) == str(ord_id):
+                chosen_ord_content_hash = match.get("content_hash", "")
         logging.info(f"req_id: {request_id}: request finished")
-        return {"result": result, "ord_id": ord_id}
+        return {
+            "result": result,
+            "ord_id": ord_id,
+            "ord_content_hash": chosen_ord_content_hash,
+        }
     except Exception as e:
         logging.exception(f"Error: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
@@ -127,8 +136,9 @@ async def by_custom_file(request: Request, file: UploadFile, top_n: int = Query(
         )
         file_bytes = await file.read()
         result = do_by_custom_file(file_bytes, top_n)
+        file_content_hash = content_md5_hash(file_bytes)
         logging.info(f"req_id: {request_id}: request finished")
-        return {"result": result}
+        return {"result": result, "ord_content_hash": file_content_hash}
     except Exception as e:
         logging.exception(f"Error: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import io
 from pathlib import Path
 from typing import TypedDict
@@ -20,6 +21,10 @@ from config import Config
 class Match(TypedDict):
     ord_id: str
     match_sum: int
+
+
+def content_md5_hash(content: bytes) -> str:
+    return hashlib.md5(content).hexdigest()
 
 
 def path_to_hash(image_path: str | Path) -> str:

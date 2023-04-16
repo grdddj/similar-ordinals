@@ -1,5 +1,6 @@
 const SPONSOR_MINTING_WEBSITE = "https://ordinalswallet.com/inscribe";
 const API_ENDPOINT = "https://api.ordsimilarity.com";
+// const API_ENDPOINT = "http://localhost:8002";
 
 function selectImage() {
     const input = document.getElementById('fileInput');
@@ -39,8 +40,13 @@ function submitImage() {
         .then(data => {
             // Hide the loading popup
             popup.style.display = "none";
+            // Get the content hash to show duplicated
+            let ordContentHash = null
+            if (data.hasOwnProperty("ord_content_hash")) {
+                ordContentHash = data.ord_content_hash;
+            }
             // Show the results
-            updateResults(data, null);
+            updateResults(data, null, ordContentHash);
             // Showing the trivia funny facts
             showTriviaFooter();
         })
@@ -81,7 +87,7 @@ function fill_chosen_picture(src, chosenItem) {
     }
 }
 
-function updateResults(new_data, chosenOrdID) {
+function updateResults(new_data, chosenOrdID, chosenContentHash) {
     // Load everything into dictionary for faster lookup per ID
     const resultDict = {};
     new_data.result.forEach(function(item) {
@@ -93,15 +99,13 @@ function updateResults(new_data, chosenOrdID) {
     new_data.result.forEach(function(item) {
         // Not displaying the item which user chose - by ordID
         // Also, marking those pixel-perfect matches as those
-        let isDuplicate = false;
-        if (chosenOrdID) {
-            const chosenItem = resultDict[chosenOrdID];
-            if (item.id == chosenOrdID) {
-                return;
-            } else if (item.content_hash == chosenItem.content_hash) {
-                isDuplicate = true;
-            }
+        if (chosenOrdID && item.id == chosenOrdID) {
+            return;
         }
+        let isDuplicate = false;
+        if (item.content_hash == chosenContentHash) {
+            isDuplicate = true;
+        } 
 
         let similarity = item.similarity;
         let red = '';
