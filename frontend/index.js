@@ -1,4 +1,5 @@
 const SPONSOR_MINTING_WEBSITE = "https://ordinalswallet.com/inscribe";
+const API_ENDPOINT = "https://api.ordsimilarity.com";
 
 function selectImage() {
     const input = document.getElementById('fileInput');
@@ -30,7 +31,7 @@ function submitImage() {
     const formData = new FormData();
     formData.append('file', file);
 
-    fetch('https://api.ordsimilarity.com/file', {
+    fetch(API_ENDPOINT + '/file', {
             method: 'POST',
             body: formData
         })
@@ -224,7 +225,7 @@ function getOrdIdResults(ordID) {
     // Close the input
     closeOrdIdPopup();
 
-    fetch("https://api.ordsimilarity.com/ord_id/" + ordID)
+    fetch(API_ENDPOINT + "/ord_id/" + ordID)
         .then((response) => response.json())
         .then((data) => {
             if (data.result.length == 0) {
@@ -234,6 +235,10 @@ function getOrdIdResults(ordID) {
                 // Open the input again so user can correct it
                 openOrdIdChoicePopup();
                 return;
+            }
+            // Possibly we have chosen a random ordID, so need to check which we actually got
+            if (data.hasOwnProperty("ord_id")) {
+                ordID = data.ord_id;
             }
             // Show the results
             updateResults(data, ordID);
@@ -277,6 +282,10 @@ function updateURLWithQueryParam(name, value) {
     window.history.pushState({}, "", url);
 }
 
+function getRandomResults() {
+    getOrdIdResults("random");
+}
+
 window.addEventListener("click", function(event) {
     const ordIdInputPopup = document.getElementById("ordIdInputPopup");
     if (event.target == ordIdInputPopup) {
@@ -295,6 +304,12 @@ document.addEventListener("keydown", function(event) {
     // Pressing U (UPLOAD) key will trigger the upload input
     if (event.key === "u") {
         selectImage();
+        event.preventDefault();
+        return;
+    }
+    // Pressing F (FEELING) key will get random results
+    if (event.key === "f") {
+        getRandomResults();
         event.preventDefault();
         return;
     }
