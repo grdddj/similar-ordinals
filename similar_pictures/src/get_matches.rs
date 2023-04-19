@@ -7,6 +7,8 @@ use std::collections::HashMap;
 use std::fs::OpenOptions;
 use std::io::Write;
 
+use bit_set::BitSet;
+
 #[derive(Debug, Serialize)]
 struct MatchItem {
     ord_id: String,
@@ -30,7 +32,7 @@ pub fn get_matches(file_path: String, ord_id: Option<String>, file_hash: Option<
         .expect("Unable to read the file content");
 
     let db: Db = serde_json::from_str(&content).expect("Unable to parse JSON");
-    
+
     // If ord ID is provided, use it, otherwise use the file hash
     let file_hash = if let Some(ord_id) = ord_id {
         if let Some(value) = db.data.get(&ord_id) {
@@ -44,13 +46,27 @@ pub fn get_matches(file_path: String, ord_id: Option<String>, file_hash: Option<
         panic!("No ord ID or file hash provided");
     };
 
+    let hash_length: usize = file_hash.len();
+
+    let file_hash_bitset = str_to_bitset(&file_hash);
+    
     let mut matches: Vec<MatchItem> = Vec::new();
     for (ord_id, hash) in db.data {
-        let match_sum = file_hash
-            .chars()
-            .zip(hash.chars())
-            .filter(|(c1, c2)| c1 == c2)
-            .count();
+        let hash_bitset = str_to_bitset(&hash);
+        // println!("hash_bitset: {:?}", hash_bitset);
+        let different_bit_set = file_hash_bitset.symmetric_difference(&hash_bitset);
+        // println!("different_bit_set: {:?}", different_bit_set);
+        let different_bit_count = different_bit_set.count();
+        // println!("different_bit_count: {:?}", different_bit_count);
+        let same_bit_count = hash_length - different_bit_count;
+        let match_sum = usize::max(same_bit_count, different_bit_count);
+        // println!("same_bit_count: {:?}", same_bit_count);
+        // let match_sum = file_hash
+        // .chars()
+        // .zip(hash.chars())
+        // .filter(|(c1, c2)| c1 == c2)
+        // .count();
+        // println!("match_sum: {:?}", match_sum);
         matches.push(MatchItem { ord_id, match_sum });
     }
 
@@ -59,6 +75,17 @@ pub fn get_matches(file_path: String, ord_id: Option<String>, file_hash: Option<
     let top_matches = &matches[..top_n];
 
     serde_json::to_string(top_matches).expect("Failed to serialize to JSON")
+}
+
+
+fn str_to_bitset(bit_str: &str) -> BitSet {
+    let mut bitset = BitSet::with_capacity(bit_str.len());
+    for (i, c) in bit_str.chars().enumerate() {
+        if c == '1' {
+            bitset.insert(i);
+        }
+    }
+    bitset
 }
 
 

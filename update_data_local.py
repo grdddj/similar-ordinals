@@ -46,6 +46,7 @@ def save_new_avg_hash(ord_id: str, avg_hash: str) -> None:
 def main() -> None:
     average_hash_data = get_current_data()
     last_id = get_our_last_id(average_hash_data)
+    logging.info(f"last_id {last_id}")
 
     for progress, inscr in enumerate(
         get_all_image_inscriptions_iter_bigger_than(last_id)
