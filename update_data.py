@@ -1,13 +1,12 @@
 from __future__ import annotations
 
 import json
-import logging
 from datetime import datetime
 from pathlib import Path
 
 import requests  # type: ignore
 
-from common import bytes_to_hash, content_md5_hash
+from common import bytes_to_hash, content_md5_hash, get_logger
 from config import Config
 from db_files import ByteData
 from db_files import get_session as get_files_session
@@ -17,16 +16,14 @@ from db_ord_data import get_session as get_data_session
 HERE = Path(__file__).parent
 
 log_file_path = HERE / "update_data.log"
-logging.basicConfig(
-    filename=log_file_path,
-    level=logging.INFO,
-    format="%(asctime)s %(message)s",
-)
+logger = get_logger(__file__, log_file_path)
 
 new_hashes_file = HERE / "new_average_hashes.txt"
 
 HIRO_API = "https://api.hiro.so/ordinals/v1/inscriptions"
 HIRO_CONTENT_API_TEMPLATE = "https://api.hiro.so/ordinals/v1/inscriptions/{}/content"
+
+QUICK_PICTURE_UPDATE = True
 
 new_average_hashes: dict[str, str] = {}
 
@@ -76,18 +73,20 @@ def get_specific_ord_id(ord_id: int | str) -> dict:
 
 
 def process_batch(limit: int, from_number: int, to_number: int) -> None:
-    logging.info(f"Processing batch {from_number} - {to_number}")
+    logger.info(f"Processing batch {from_number} - {to_number}")
     params = {"limit": limit, "from_number": from_number, "to_number": to_number}
     r = requests.get(HIRO_API, params=params)
     r.raise_for_status()
     data = r.json()
 
-    files_db_session = get_files_session()
+    if QUICK_PICTURE_UPDATE:
+        files_db_session = get_files_session()
     ord_data_session = get_data_session()
 
     for entry in data["results"]:
-        # if not entry["content_type"].startswith("image/"):
-        #     continue
+        if QUICK_PICTURE_UPDATE:
+            if not entry["content_type"].startswith("image/"):
+                continue
 
         # Get content from another endpoint
         ord_id: int = entry["number"]
@@ -101,25 +100,29 @@ def process_batch(limit: int, from_number: int, to_number: int) -> None:
                 new_average_hashes[str(ord_id)] = average_hash
                 save_new_avg_hash(str(ord_id), average_hash)
             except Exception as e:
-                logging.exception(
+                logger.exception(
                     f"ERROR: could not get average hash of picture {ord_id} - {entry} - {e}"
                 )
 
         # Save content to db if not there already
-        if files_db_session.query(ByteData).get(entry["tx_id"]) is None:
-            byte_data = ByteData(id=entry["tx_id"], data=content_data)
-            files_db_session.add(byte_data)
+        if QUICK_PICTURE_UPDATE:
+            if files_db_session.query(ByteData).get(entry["tx_id"]) is None:
+                byte_data = ByteData(id=entry["tx_id"], data=content_data)
+                files_db_session.add(byte_data)
 
         # Save ord_data to db if not there already
         if ord_data_session.query(InscriptionModel).get(ord_id) is None:
             inscr_model = create_inscription_model_from_api_data(entry, content_data)
             ord_data_session.add(inscr_model)
 
-    files_db_session.commit()
+    if QUICK_PICTURE_UPDATE:
+        files_db_session.commit()
     ord_data_session.commit()
 
 
-def create_inscription_model_from_api_data(data: dict, content_data: bytes) -> InscriptionModel:
+def create_inscription_model_from_api_data(
+    data: dict, content_data: bytes
+) -> InscriptionModel:
     content_hash = content_md5_hash(content_data)
     timestamp_ms = data["timestamp"]
     unix_timestamp = timestamp_ms // 1000
@@ -143,9 +146,9 @@ def create_inscription_model_from_api_data(data: dict, content_data: bytes) -> I
 def main() -> None:
     average_hash_data = get_current_data()
     last_id = get_our_last_id(average_hash_data)
-    logging.info(f"Last id: {last_id}")
+    logger.info(f"Last id: {last_id}")
     total_missing = get_missing_amount(last_id)
-    logging.info(f"Total missing: {total_missing}")
+    logger.info(f"Total missing: {total_missing}")
 
     processed = 0
     while processed < total_missing:
@@ -158,7 +161,7 @@ def main() -> None:
     # merge average_hash_data with new_average_hashes and save it
     average_hash_data.update(new_average_hashes)
     save_new_data(average_hash_data)
-    logging.info("Done!")
+    logger.info("Done!")
 
 
 if __name__ == "__main__":

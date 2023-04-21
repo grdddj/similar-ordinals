@@ -80,6 +80,11 @@ class InscriptionModel(SQLModel, table=True):
         return model
 
 
+def get_all_inscriptions_iter() -> Iterator[InscriptionModel]:
+    session = get_session()
+    yield from session.query(InscriptionModel).yield_per(100)
+
+
 def get_all_image_inscriptions_iter() -> Iterator[InscriptionModel]:
     session = get_session()
     yield from session.query(InscriptionModel).filter(

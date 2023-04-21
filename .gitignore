@@ -6,10 +6,12 @@ __pycache__
 .mypy_cache
 images
 helpers
+files_*
 *.log
 *.txt
 **nsfw**
 !requirements.txt
 nohup.out
 deploy*.sh
+restart*.sh
 config.py

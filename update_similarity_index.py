@@ -1,7 +1,7 @@
 import json
-import logging
 from pathlib import Path
 
+from common import get_logger
 from config import Config
 from db_similarity_index import SimilarityIndex, get_highest_id, get_session
 from get_matches import get_matches_from_data
@@ -10,24 +10,20 @@ from rust_server import get_matches_from_rust_server
 HERE = Path(__file__).parent
 
 log_file_path = HERE / "update_similarity_index.log"
-logging.basicConfig(
-    filename=log_file_path,
-    level=logging.INFO,
-    format="%(asctime)s %(message)s",
-)
+logger = get_logger(__file__, log_file_path)
 
 is_rust_server_running = True
 try:
     get_matches_from_rust_server(ord_id=1, file_hash=None)
-    logging.info("Rust server is running")
+    logger.info("Rust server is running")
 except Exception as e:
     is_rust_server_running = False
-    logging.error(f"Rust server is not running {e}")
+    logger.error(f"Rust server is not running {e}")
 
 
 def main():
     highest_indexed_id = get_highest_id()
-    logging.info(f"highest_indexed_id {highest_indexed_id}")
+    logger.info(f"highest_indexed_id {highest_indexed_id}")
 
     with open(Config.AVERAGE_HASH_DB, "r") as f:
         data = json.load(f)["data"]
@@ -44,7 +40,7 @@ def main():
     # calculate the index for all the ord_ids higher than highest_indexed_id
     for progress, (ord_id, average_hash) in enumerate(not_indexed_data.items()):
         if progress % 100 == 0:
-            logging.info(f"New update progress {progress} / {len(not_indexed_data)}")
+            logger.info(f"New update progress {progress} / {len(not_indexed_data)}")
         if session.query(SimilarityIndex).get(int(ord_id)) is not None:
             continue
         if is_rust_server_running:
@@ -69,9 +65,7 @@ def main():
         already_indexed_data.items()
     ):
         if progress % 100 == 0:
-            logging.info(
-                f"Old update progress {progress} / {len(already_indexed_data)}"
-            )
+            logger.info(f"Old update progress {progress} / {len(already_indexed_data)}")
         new_matches = get_matches_from_data(
             not_indexed_data, ord_id=None, file_hash=old_average_hash, top_n=20
         )
@@ -97,4 +91,4 @@ if __name__ == "__main__":
     try:
         main()
     except Exception as e:
-        logging.exception(e)
+        logger.exception(e)

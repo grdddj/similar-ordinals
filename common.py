@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import hashlib
 import io
+import logging
 from pathlib import Path
 from typing import TypedDict
 
-import numpy as np
+import numpy as np  # type: ignore
 from PIL import Image  # type: ignore
 
 try:
@@ -21,6 +22,16 @@ from config import Config
 class Match(TypedDict):
     ord_id: str
     match_sum: int
+
+
+def get_logger(name: str, log_file_path: str | Path) -> logging.Logger:
+    logger = logging.getLogger(name)
+    logger.setLevel(logging.INFO)
+    log_handler = logging.FileHandler(log_file_path)
+    log_formatter = logging.Formatter("%(asctime)s %(message)s")
+    log_handler.setFormatter(log_formatter)
+    logger.addHandler(log_handler)
+    return logger
 
 
 def content_md5_hash(content: bytes) -> str:
