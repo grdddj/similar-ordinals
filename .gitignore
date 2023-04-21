@@ -8,6 +8,7 @@ images
 helpers
 *.log
 *.txt
+**nsfw**
 !requirements.txt
 nohup.out
 deploy*.sh

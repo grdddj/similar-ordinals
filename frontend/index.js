@@ -7,14 +7,20 @@ function selectImage() {
     input.click();
     input.addEventListener('change', () => {
         const file = input.files[0];
-        // Showing the chosen picture in a card
-        const reader = new FileReader();
-        reader.addEventListener('load', (event) => {
-            fill_chosen_picture(event.target.result, null);
-        });
-        reader.readAsDataURL(file);
-        // Submitting the image
-        submitImage();
+        const fileType = file.type;
+        const fileExtension = file.name.split('.').pop().toLowerCase();
+        if (fileType.startsWith('image/') || ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg'].includes(fileExtension)) {
+            // Showing the chosen picture in a card
+            const reader = new FileReader();
+            reader.addEventListener('load', (event) => {
+                fill_chosen_picture(event.target.result, null);
+            });
+            reader.readAsDataURL(file);
+            // Submitting the image
+            submitImage();
+        } else {
+            alert('Please select an image file.');
+        }
     });
 }
 
