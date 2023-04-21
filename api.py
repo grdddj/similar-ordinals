@@ -1,5 +1,5 @@
 # Deployed by:
-# uvicorn api:app --reload --host 0.0.0.0 --port 8001
+# uvicorn api:app --reload --host 0.0.0.0 --port 8002
 from __future__ import annotations
 
 import json
@@ -18,6 +18,11 @@ from db_ord_data import InscriptionModel
 from db_similarity_index import SimilarityIndex
 from get_matches import get_matches_from_data
 from rust_server import get_matches_from_rust_server
+from update_data import (
+    create_inscription_model_from_api_data,
+    get_ord_id_content,
+    get_specific_ord_id,
+)
 
 HERE = Path(__file__).parent
 
@@ -46,10 +51,15 @@ RANDOM_ORD_ID = "random"
 # Storing the data globally, so it is immediately available for all requests
 with open(Config.AVERAGE_HASH_DB) as f:
     average_hash_data: dict[str, str] = json.load(f)["data"]
+highest_id_we_have = max(int(k) for k in average_hash_data.keys())
 
 
 def get_full_inscription_result(match: Match) -> dict:
     inscription = InscriptionModel.by_id(int(match["ord_id"]))
+    return get_result_with_having_inscription(match, inscription)
+
+
+def get_result_with_having_inscription(match: Match, inscription: InscriptionModel) -> dict:
     inscr_dict = inscription.dict()
     inscr_dict["similarity"] = match["match_sum"]
     inscr_dict["ordinals_com_link"] = inscription.ordinals_com_link()
@@ -113,17 +123,45 @@ def do_by_ord_id(ord_id: int, top_n: int = 20) -> list[dict]:
             for match_ord_id, match_sum in SimilarityIndex.list_by_id(ord_id)[:top_n]
         ]
     else:
-        try:
-            matches = get_matches_from_rust_server(ord_id, None)
-        except Exception as e:
-            logging.error(f"Error from Rust server: {e}")
-            matches = get_matches_from_data(average_hash_data, str(ord_id), None, top_n)
+        if ord_id not in average_hash_data:
+            return do_by_ord_id_we_do_not_have(ord_id, top_n)
+        else:
+            try:
+                matches = get_matches_from_rust_server(ord_id, None)
+            except Exception as e:
+                logging.error(f"Error from Rust server: {e}")
+                matches = get_matches_from_data(average_hash_data, str(ord_id), None, top_n)
     # We must make sure that the requested ord_id is in the results
     # (it may not be, when there is a lot of duplicates)
     if matches and ord_id not in [int(match["ord_id"]) for match in matches]:
         matches.pop()
         matches.append({"ord_id": str(ord_id), "match_sum": 256})
     return [get_full_inscription_result(match) for match in matches[:top_n]]
+
+
+
+def do_by_ord_id_we_do_not_have(ord_id: int, top_n: int = 20) -> list[dict]:
+    if ord_id < highest_id_we_have:
+        logging.error(f"Not a valid picture - {ord_id}")
+        return []
+    else:
+        # Downloading it in real time
+        try:
+            ord_data_bytes = get_ord_id_content(ord_id)
+            ord_id_data = get_specific_ord_id(ord_id)
+            inscription = create_inscription_model_from_api_data(ord_id_data, ord_data_bytes)
+            results = do_by_custom_file(ord_data_bytes, top_n)
+            # add the requested one to the results
+            match: Match = {
+                "ord_id": str(ord_id),
+                "match_sum": 256,
+            }
+            new_result = get_result_with_having_inscription(match, inscription)
+            results.append(new_result)
+            return results
+        except Exception as e:
+            logging.error(f"Could not download/parse picture - {ord_id}, {e}")
+            return []
 
 
 # curl -X POST -H "Content-Type: multipart/form-data" -F "file=@images/1.jpg" http://localhost:8001/file?top_n=10

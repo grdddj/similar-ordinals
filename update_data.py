@@ -67,6 +67,14 @@ def get_ord_id_content(ord_id: int) -> bytes:
     return r.content
 
 
+def get_specific_ord_id(ord_id: int | str) -> dict:
+    params = {"limit": 1, "from_number": ord_id, "to_number": ord_id}
+    r = requests.get(HIRO_API, params=params)
+    r.raise_for_status()
+    data = r.json()
+    return data["results"][0]
+
+
 def process_batch(limit: int, from_number: int, to_number: int) -> None:
     logging.info(f"Processing batch {from_number} - {to_number}")
     params = {"limit": limit, "from_number": from_number, "to_number": to_number}
@@ -104,31 +112,32 @@ def process_batch(limit: int, from_number: int, to_number: int) -> None:
 
         # Save ord_data to db if not there already
         if ord_data_session.query(InscriptionModel).get(ord_id) is None:
-            content_hash = content_md5_hash(content_data)
-            timestamp_ms = entry["timestamp"]
-            unix_timestamp = timestamp_ms // 1000
-            str_datetime = datetime.fromtimestamp(unix_timestamp).strftime(
-                "%Y-%m-%d %H:%M:%S"
-            )
-
-            inscr = InscriptionModel(
-                id=ord_id,
-                tx_id=entry["tx_id"],
-                minted_address=entry["address"],
-                content_type=content_type,
-                content_hash=content_hash,
-                datetime=str_datetime,
-                timestamp=unix_timestamp,
-                content_length=entry["content_length"],
-                genesis_fee=int(entry["genesis_fee"]),
-                genesis_height=entry["genesis_block_height"],
-                output_value=int(entry["value"]),
-                sat_index=0,
-            )
-            ord_data_session.add(inscr)
+            inscr_model = create_inscription_model_from_api_data(entry, content_data)
+            ord_data_session.add(inscr_model)
 
     files_db_session.commit()
     ord_data_session.commit()
+
+
+def create_inscription_model_from_api_data(data: dict, content_data: bytes) -> InscriptionModel:
+    content_hash = content_md5_hash(content_data)
+    timestamp_ms = data["timestamp"]
+    unix_timestamp = timestamp_ms // 1000
+    str_datetime = datetime.fromtimestamp(unix_timestamp).strftime("%Y-%m-%d %H:%M:%S")
+    return InscriptionModel(
+        id=data["number"],
+        tx_id=data["tx_id"],
+        minted_address=data["address"],
+        content_type=data["content_type"],
+        content_hash=content_hash,
+        datetime=str_datetime,
+        timestamp=unix_timestamp,
+        content_length=data["content_length"],
+        genesis_fee=int(data["genesis_fee"]),
+        genesis_height=data["genesis_block_height"],
+        output_value=int(data["value"]),
+        sat_index=0,
+    )
 
 
 def main() -> None:
