@@ -1,3 +1,5 @@
+PHONY: status
+
 style:
 	isort --profile black .
 	black .
@@ -9,3 +11,6 @@ check:
     # E501 line too long
 	flake8 --ignore=E501 .
 	mypy .
+
+status:
+	./status.sh

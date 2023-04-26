@@ -8,10 +8,12 @@ images
 helpers
 files_*
 *.log
-*.txt
+*.dat
 **nsfw**
+*.txt
 !requirements.txt
 nohup.out
 deploy*.sh
 restart*.sh
+status*.sh
 config.py
