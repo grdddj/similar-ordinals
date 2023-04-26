@@ -123,7 +123,7 @@ def do_by_ord_id(ord_id: int, top_n: int = 20) -> list[dict]:
             for match_ord_id, match_sum in SimilarityIndex.list_by_id(ord_id)[:top_n]
         ]
     else:
-        if ord_id not in average_hash_data:
+        if str(ord_id) not in average_hash_data:
             return do_by_ord_id_we_do_not_have(ord_id, top_n)
         else:
             try:
@@ -200,7 +200,7 @@ def do_by_custom_file(file_bytes: bytes, top_n: int = 20) -> list[dict]:
 async def get_docs(request: Request):
     try:
         request_id = generate_random_id()
-        logging.info(f"DOCS - req_id: {request_id}, HOST: {get_client_ip(request)}")
+        logger.info(f"DOCS - req_id: {request_id}, HOST: {get_client_ip(request)}")
         return {
             "docs": "Go to https://github.com/grdddj/similar-ordinals#api to see the API docs and supported endpoints",
             "example": "Get 10 most similar ordinals to the ordinal with ID 0: https://api.ordsimilarity.com/ord_id/0?top_n=10",
