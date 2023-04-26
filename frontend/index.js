@@ -1,6 +1,6 @@
 const SPONSOR_MINTING_WEBSITE = "https://ordinalswallet.com/inscribe";
-// const API_ENDPOINT = "https://api.ordsimilarity.com";
-const API_ENDPOINT = "http://localhost:8002";
+const API_ENDPOINT = "https://api.ordsimilarity.com";
+// const API_ENDPOINT = "http://localhost:8002";
 const RANDOM_RESULTS_ID = "random";
 
 function selectImage() {
@@ -277,7 +277,7 @@ function getResultFromURL(url, ordIDOrTxID) {
         .then((response) => response.json())
         .then((data) => {
             if (data.result === undefined) {
-                alert("Problem on our side. We apologize. Please check input and try it again.");
+                alert("SVG pictures are not supported. We apologize. Please check input and try it again.");
                 // Hide the loading popup
                 popup.style.display = "none";
                 // Open the input again so user can correct it
