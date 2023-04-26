@@ -14,7 +14,7 @@
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1, maximum-scale=1" name="viewport">
     <meta
-      description="Search engine looking for similar ordinals pictures. You can upload either a custom file or give and ordinal ID and get ordinals that are identical or similar.">
+      description="Search engine looking for similar ordinals pictures. You can upload either a custom file or give and ordinal ID or transaction ID and get ordinals that are identical or similar.">
     <meta keywords="Bitcoin ordinals inscriptions similarity search-engine">
     <meta author="grdddj - https://github.com/grdddj">
     <link rel="stylesheet" href="index.css" />
@@ -37,7 +37,7 @@
       <br>
       
       <button id="ordIDButton" onclick="openOrdIdChoicePopup()">
-        <u>C</u>hoose an Ordinal ID
+        <u>C</u>hoose an Ordinal ID / transaction ID
       </button>
 
       <br>
@@ -49,8 +49,8 @@
       <!-- Ord ID input popup -->
       <div id="ordIdInputPopup" class="custom-popup">
         <div class="popup-content">
-          <h2><u>Enter</u> Ordinal ID</h2>
-          <input id="ordinalInput" type="text" placeholder="Ordinal ID">
+          <h2><u>Enter</u> Ordinal ID or transaction ID</h2>
+          <input id="ordinalInput" type="text" placeholder="Ordinal ID / transaction ID">
           <button onclick="chooseOrdID()">Submit</button>
         </div>
       </div>

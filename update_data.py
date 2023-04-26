@@ -58,18 +58,39 @@ def save_new_avg_hash(ord_id: str, avg_hash: str) -> None:
         f.write(f"{ord_id} {avg_hash}\n")
 
 
-def get_ord_id_content(ord_id: int) -> bytes:
+def get_content_from_hiro_by_ord_id(ord_id: int) -> bytes | None:
     r = requests.get(HIRO_CONTENT_API_TEMPLATE.format(ord_id))
-    r.raise_for_status()
-    return r.content
+    if r.status_code == 200:
+        return r.content
+    return None
 
 
-def get_specific_ord_id(ord_id: int | str) -> dict:
+def get_hiro_content_link_from_ord_id(ord_id: int) -> str:
+    return HIRO_CONTENT_API_TEMPLATE.format(ord_id)
+
+
+def get_hiro_content_link_from_tx_id(tx_id: str) -> str | None:
+    data = get_from_hiro_by_tx_id(tx_id)
+    if not data:
+        return None
+    ord_id = data["number"]
+    return get_hiro_content_link_from_ord_id(ord_id)
+
+
+def get_from_hiro_by_ord_id(ord_id: int | str) -> dict:
     params = {"limit": 1, "from_number": ord_id, "to_number": ord_id}
     r = requests.get(HIRO_API, params=params)
     r.raise_for_status()
     data = r.json()
     return data["results"][0]
+
+
+def get_from_hiro_by_tx_id(tx_id: str) -> dict | None:
+    url = f"{HIRO_API}/{tx_id}i0"
+    r = requests.get(url)
+    if r.status_code == 200:
+        return r.json()
+    return None
 
 
 def process_batch(limit: int, from_number: int, to_number: int) -> None:
@@ -90,7 +111,10 @@ def process_batch(limit: int, from_number: int, to_number: int) -> None:
 
         # Get content from another endpoint
         ord_id: int = entry["number"]
-        content_data = get_ord_id_content(ord_id)
+        content_data = get_content_from_hiro_by_ord_id(ord_id)
+        if not content_data:
+            logger.error(f"Cant get content for {ord_id}")
+            continue
 
         # Try to get average hashes for all the images
         content_type = entry["content_type"]

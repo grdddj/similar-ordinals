@@ -16,11 +16,13 @@ from config import Config
 from db_ord_data import InscriptionModel
 from db_similarity_index import SimilarityIndex
 from get_matches import get_matches_from_data
+from mempool import get_link_and_content_from_mempool
 from rust_server import get_matches_from_rust_server
 from update_data import (
     create_inscription_model_from_api_data,
-    get_ord_id_content,
-    get_specific_ord_id,
+    get_content_from_hiro_by_ord_id,
+    get_from_hiro_by_ord_id,
+    get_from_hiro_by_tx_id,
 )
 
 HERE = Path(__file__).parent
@@ -39,7 +41,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-USE_ORD_ID_INDEX = True
+USE_ORD_ID_INDEX = False
 RANDOM_ORD_ID = "random"
 
 
@@ -54,6 +56,7 @@ logger.info(
 
 def get_full_inscription_result(match: Match) -> dict:
     inscription = InscriptionModel.by_id(int(match["ord_id"]))
+    assert inscription is not None
     return get_result_with_having_inscription(match, inscription)
 
 
@@ -98,21 +101,27 @@ async def by_ord_id(request: Request, ord_id: Union[int, str], top_n: int = Quer
             ord_id = int(ord_id)
         except ValueError:
             raise HTTPException(status_code=400, detail="ord_id must be an integer")
-        result = do_by_ord_id(ord_id, top_n)
-        # get the content hash of chosen ordinal
-        chosen_ord_content_hash = ""
-        for match in result:
-            if str(match.get("id")) == str(ord_id):
-                chosen_ord_content_hash = match.get("content_hash", "")
+        result = result_by_ord_id(ord_id, top_n)
         logger.info(f"req_id: {request_id}: request finished")
-        return {
-            "result": result,
-            "ord_id": ord_id,
-            "ord_content_hash": chosen_ord_content_hash,
-        }
+        return result
     except Exception as e:
         logger.exception(f"Error: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
+
+
+def result_by_ord_id(ord_id: int, top_n: int = 20, tx_id: str = "") -> dict:
+    result = do_by_ord_id(ord_id, top_n)
+    # get the content hash of chosen ordinal
+    chosen_ord_content_hash = ""
+    for match in result:
+        if str(match.get("id")) == str(ord_id):
+            chosen_ord_content_hash = match.get("content_hash", "")
+    return {
+        "result": result,
+        "ord_id": ord_id,
+        "tx_id": tx_id,
+        "ord_content_hash": chosen_ord_content_hash,
+    }
 
 
 def do_by_ord_id(ord_id: int, top_n: int = 20) -> list[dict]:
@@ -148,8 +157,10 @@ def do_by_ord_id_we_do_not_have(ord_id: int, top_n: int = 20) -> list[dict]:
     else:
         # Downloading it in real time
         try:
-            ord_data_bytes = get_ord_id_content(ord_id)
-            ord_id_data = get_specific_ord_id(ord_id)
+            ord_data_bytes = get_content_from_hiro_by_ord_id(ord_id)
+            if not ord_data_bytes:
+                raise Exception("No data in Hiro")
+            ord_id_data = get_from_hiro_by_ord_id(ord_id)
             inscription = create_inscription_model_from_api_data(
                 ord_id_data, ord_data_bytes
             )
@@ -167,6 +178,55 @@ def do_by_ord_id_we_do_not_have(ord_id: int, top_n: int = 20) -> list[dict]:
             return []
 
 
+# curl http://localhost:8001/tx_id/fd84ceb8948066730474d4fa089cad90b07239e4f8506cb498b3197fb030df09?top_n=10
+@app.get("/tx_id/{tx_id}")
+async def by_tx_id(request: Request, tx_id: str, top_n: int = Query(20)):
+    try:
+        request_id = generate_random_id()
+        logger.info(
+            f"req_id: {request_id}, HOST: {get_client_ip(request)}, tx_id: {tx_id}, top_n: {top_n}"
+        )
+
+        # tx_id could have i0 at the end, we need to remove it
+        if len(tx_id) == 64 + 2:
+            tx_id = tx_id[:-2]
+        if len(tx_id) != 64:
+            raise HTTPException(status_code=400, detail="tx_id must be 64 characters")
+
+        # Try translating tx_id to ord_id
+        ord_id = try_getting_ord_id_from_tx_id(tx_id)
+        if ord_id is not None:
+            result = result_by_ord_id(ord_id, top_n, tx_id)
+            logger.info(f"req_id: {request_id}: request finished")
+            return result
+
+        # If we still do not have it, search in mempool
+        mempool_link, content = get_link_and_content_from_mempool(tx_id)
+        if not content:
+            raise HTTPException(status_code=404, detail="tx_id not found")
+
+        result = results_by_custom_file(content, top_n, tx_id)
+        result["chosen_content_link"] = mempool_link
+        result["mempool"] = True
+        result["tx_id"] = tx_id
+        return result
+    except Exception as e:
+        logger.exception(f"Error: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+def try_getting_ord_id_from_tx_id(tx_id: str) -> int | None:
+    db_inscription = InscriptionModel.by_tx_id(tx_id)
+    if db_inscription:
+        return db_inscription.id
+
+    hiro_inscription = get_from_hiro_by_tx_id(tx_id)
+    if hiro_inscription:
+        return hiro_inscription["number"]
+
+    return None
+
+
 # curl -X POST -H "Content-Type: multipart/form-data" -F "file=@images/1.jpg" http://localhost:8001/file?top_n=10
 @app.post("/file")
 async def by_custom_file(request: Request, file: UploadFile, top_n: int = Query(20)):
@@ -176,13 +236,18 @@ async def by_custom_file(request: Request, file: UploadFile, top_n: int = Query(
             f"req_id: {request_id}, HOST: {get_client_ip(request)}, filename: {file.filename}, size: {file.size}, top_n: {top_n}"
         )
         file_bytes = await file.read()
-        result = do_by_custom_file(file_bytes, top_n)
-        file_content_hash = content_md5_hash(file_bytes)
+        result = results_by_custom_file(file_bytes, top_n)
         logger.info(f"req_id: {request_id}: request finished")
-        return {"result": result, "ord_content_hash": file_content_hash}
+        return result
     except Exception as e:
         logger.exception(f"Error: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
+
+
+def results_by_custom_file(file_bytes: bytes, top_n: int = 20, tx_id: str = "") -> dict:
+    result = do_by_custom_file(file_bytes, top_n)
+    file_content_hash = content_md5_hash(file_bytes)
+    return {"result": result, "ord_content_hash": file_content_hash, "tx_id": tx_id}
 
 
 def do_by_custom_file(file_bytes: bytes, top_n: int = 20) -> list[dict]:

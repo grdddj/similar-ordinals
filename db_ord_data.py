@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Iterator
 
 from sqlmodel import Field, Index, Session, SQLModel, UniqueConstraint, create_engine
@@ -60,7 +62,7 @@ class InscriptionModel(SQLModel, table=True):
         return f"https://mempool.space/tx/{self.tx_id}"
 
     @classmethod
-    def by_tx_id(cls, tx_id: str) -> "InscriptionModel":
+    def by_tx_id(cls, tx_id: str) -> "InscriptionModel" | None:
         session = get_session()
         model = (
             session.query(InscriptionModel)
@@ -68,15 +70,15 @@ class InscriptionModel(SQLModel, table=True):
             .first()
         )
         if not model:
-            raise ValueError(f"No inscription with tx_id {tx_id}")
+            return None
         return model
 
     @classmethod
-    def by_id(cls, id: int) -> "InscriptionModel":
+    def by_id(cls, id: int) -> "InscriptionModel" | None:
         session = get_session()
         model = session.query(InscriptionModel).get(id)
         if not model:
-            raise ValueError(f"No inscription with id {id}")
+            return None
         return model
 
 

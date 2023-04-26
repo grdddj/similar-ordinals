@@ -1,6 +1,7 @@
 const SPONSOR_MINTING_WEBSITE = "https://ordinalswallet.com/inscribe";
-const API_ENDPOINT = "https://api.ordsimilarity.com";
-// const API_ENDPOINT = "http://localhost:8002";
+// const API_ENDPOINT = "https://api.ordsimilarity.com";
+const API_ENDPOINT = "http://localhost:8002";
+const RANDOM_RESULTS_ID = "random";
 
 function selectImage() {
     const input = document.getElementById('fileInput');
@@ -47,7 +48,7 @@ function submitImage() {
             // Hide the loading popup
             popup.style.display = "none";
             // Get the content hash to show duplicated
-            let ordContentHash = null
+            let ordContentHash = null;
             if (data.hasOwnProperty("ord_content_hash")) {
                 ordContentHash = data.ord_content_hash;
             }
@@ -58,20 +59,22 @@ function submitImage() {
         })
         .catch(error => {
             console.error(error);
-            alert(
-                "Error when getting data. We apologize, please try later."
-                );
+            alert("Error when getting data. We apologize, please try later.");
             // Hide the loading popup
             popup.style.display = "none";
         });
 }
 
-function fill_chosen_picture(src, chosenItem) {
+function fill_chosen_picture(src, chosenItem, possibleTXID) {
     const chosenPic = document.getElementById('chosen-picture');
     let firstLine = '';
     let secondLine = '';
-    if (chosenItem) {
-        firstLine = `Your ordinal`;
+    if (chosenItem === 'mempool') {
+        firstLine = 'Mempool ordinal';
+        const shortTxID = shortenString(possibleTXID, 4);
+        secondLine = `<strong>Tx ID:</strong> <a href="https://mempool.space/tx/${possibleTXID}" target="_blank">${shortTxID}</a>`;
+    } else if (chosenItem) {
+        firstLine = 'Your ordinal';
         secondLine = chosenItem.id;
     } else {
         firstLine = 'Your Potential Ordinal';
@@ -88,29 +91,27 @@ function fill_chosen_picture(src, chosenItem) {
     chosenPic.appendChild(cardDiv);
 
     // add event listener to cardDiv for details, when we do have the details
-    if (chosenItem) {
+    if (chosenItem && chosenItem.hasOwnProperty('id')) {
         addItemDetailsPopupToCard(cardDiv, chosenItem);
     }
 }
 
-function updateResults(new_data, chosenOrdID, chosenContentHash) {
+function updateResults(new_data, chosenOrdOrTxID, chosenContentHash) {
     // Load everything into dictionary for faster lookup per ID
     const resultDict = {};
     new_data.result.forEach(function(item) {
-        resultDict[item.id] = item;
+        resultDict[item.tx_id] = item;
     });
 
     let output = '';
-    console.log("chosenContentHash", chosenContentHash)
     
     new_data.result.forEach(function(item) {
         // Not displaying the item which user chose - by ordID
         // Also, marking those pixel-perfect matches as those
-        if (chosenOrdID && item.id == chosenOrdID) {
+        if (chosenOrdOrTxID && (item.id == chosenOrdOrTxID || item.tx_id == chosenOrdOrTxID)) {
             return;
         }
         let isDuplicate = false;
-        console.log("item.content_hash", item.content_hash)
         if (item.content_hash == chosenContentHash) {
             isDuplicate = true;
         } 
@@ -127,7 +128,7 @@ function updateResults(new_data, chosenOrdID, chosenContentHash) {
             similarityScore = similarityScore + " %";
         }
 
-        output += `<div class="card" ${redStyleOrNothing} ord-id="${item.id}">
+        output += `<div class="card" ${redStyleOrNothing} ord-id="${item.id}" tx-id="${item.tx_id}">
                  <img src="${item.hiro_content_link}">
                  <p class="cardText"><strong>Ordinal ID: </strong>${item.id}</p>
                  <p class="cardText"><strong>Similarity: </strong>${similarityScore}</p>
@@ -143,9 +144,11 @@ function updateResults(new_data, chosenOrdID, chosenContentHash) {
 
     // Open details by clicking on each card
     divCards.forEach(function(cardDiv) {
-        const ordId = cardDiv.getAttribute('ord-id');
-        const item = resultDict[ordId];
-        addItemDetailsPopupToCard(cardDiv, item);
+        const txID = cardDiv.getAttribute('tx-id');
+        const item = resultDict[txID];
+        if (item) {
+            addItemDetailsPopupToCard(cardDiv, item);
+        }
     });
 }
 
@@ -196,7 +199,7 @@ function openOrdIdChoicePopup() {
     // Display the custom popup
     ordIdInputPopup.style.display = "block";
     // Bringing cursor focus to the input field so user can write immediately
-    const ordinalInput = document.getElementById("ordinalInput")
+    const ordinalInput = document.getElementById("ordinalInput");
     ordinalInput.focus();
 }
 
@@ -210,26 +213,54 @@ function closeOrdIdPopup() {
 function chooseOrdID() {
     // Get the input element
     const ordinalInput = document.getElementById("ordinalInput");
-    const ordID = ordinalInput.value;
+    const inputValue = ordinalInput.value;
 
     // User cancelled the prompt
-    if (ordID == null) {
+    if (inputValue == null) {
         return;
     }
     // User did not enter anything
-    if (ordID == "") {
-        return;
-    }
-    // User did not enter a valid number
-    if (isNaN(ordID)) {
-        alert("Please enter a valid Ordinal ID - a number.");
+    if (inputValue == "") {
         return;
     }
 
-    getOrdIdResults(ordID);
+    // Check whether it is tx_id or ord_id
+    // If its length it 64 or 66, it is tx_id, otherwise ord_id
+    if (isTxID(inputValue)) {
+        getTxIdResults(inputValue);
+    } else if (isOrdID(inputValue)) {
+        // User did not enter a valid number
+        if (isNaN(inputValue)) {
+            alert("Please enter a valid Ordinal ID - a number.");
+            return;
+        }
+        getOrdIdResults(inputValue);
+    } else {
+        alert("Please enter a valid Ordinal ID or Transaction ID.");
+        return;
+    }
+}
+
+function isTxID(ordIDOrTxID) {
+    return ordIDOrTxID.length == 64 || ordIDOrTxID.length == 66;
+}
+
+function isOrdID(ordIDOrTxID) {
+    return ordIDOrTxID.length < 10;
+}
+
+
+function getTxIdResults(txID) {
+    const url = API_ENDPOINT + "/tx_id/" + txID;
+    getResultFromURL(url, txID);
 }
 
 function getOrdIdResults(ordID) {
+    const url = API_ENDPOINT + "/ord_id/" + ordID;
+    getResultFromURL(url, ordID);
+}
+
+function getResultFromURL(url, ordIDOrTxID) {
     const popup = document.getElementById('loadingPopup');
     // If the loading is already shown, not send another request
     if (popup.style.display === 'block') {
@@ -242,9 +273,17 @@ function getOrdIdResults(ordID) {
     // Close the input
     closeOrdIdPopup();
 
-    fetch(API_ENDPOINT + "/ord_id/" + ordID)
+    fetch(url)
         .then((response) => response.json())
         .then((data) => {
+            if (data.result === undefined) {
+                alert("Problem on our side. We apologize. Please check input and try it again.");
+                // Hide the loading popup
+                popup.style.display = "none";
+                // Open the input again so user can correct it
+                openOrdIdChoicePopup();
+                return;
+            }
             if (data.result.length == 0) {
                 alert("Given Ordinal ID is not a valid picture.");
                 // Hide the loading popup
@@ -254,22 +293,34 @@ function getOrdIdResults(ordID) {
                 return;
             }
             // Possibly we have chosen a random ordID, so need to check which we actually got
-            if (data.hasOwnProperty("ord_id")) {
-                ordID = data.ord_id;
+            if (ordIDOrTxID === RANDOM_RESULTS_ID && data.hasOwnProperty("ord_id")) {
+                ordIDOrTxID = data.ord_id;
             }
-            // Show the chosen picture if we find it in the list
-            const chosenItem = data.result.find((item) => item.id == ordID);
+
+            // Show the chosen picture if we find it in the list (show mempool picture if it is mempool)
             let chosenContentHash = null;
-            if (chosenItem) {
-                fill_chosen_picture(chosenItem.hiro_content_link, chosenItem);
-                chosenContentHash = chosenItem.content_hash;
+            if (data.mempool) {
+                chosenContentHash = data.ord_content_hash;
+                fill_chosen_picture(data.chosen_content_link, "mempool", ordIDOrTxID);
+            } else {
+                const chosenItem = data.result.find((item) => (item.id == ordIDOrTxID || item.tx_id == ordIDOrTxID));
+                if (chosenItem) {
+                    fill_chosen_picture(chosenItem.hiro_content_link, chosenItem);
+                    chosenContentHash = chosenItem.content_hash;
+                }
             }
+
             // Show the results
-            updateResults(data, ordID, chosenContentHash);
+            updateResults(data, ordIDOrTxID, chosenContentHash);
             // Clear the input
+            const ordinalInput = document.getElementById("ordinalInput");
             ordinalInput.value = "";
             // Update the URL to contain ord_id=ordID parameter
-            updateURLWithQueryParam("ord_id", ordID);
+            if (ordIDOrTxID.length > 10) {
+                updateURLWithQueryParamAndDeleteAllOthers("tx_id", ordIDOrTxID);
+            } else {
+                updateURLWithQueryParamAndDeleteAllOthers("ord_id", ordIDOrTxID);
+            }
             // Showing the trivia funny facts
             showTriviaFooter();
             // Scrolling the view to see the beginning of results
@@ -295,14 +346,16 @@ function showTriviaFooter() {
     triviaFooter.style.display = "block";
 }
 
-function updateURLWithQueryParam(name, value) {
+function updateURLWithQueryParamAndDeleteAllOthers(name, value) {
     const url = new URL(window.location.href);
+    // Clear all existing query parameters
+    url.search = '';
     url.searchParams.set(name, value);
     window.history.pushState({}, "", url);
 }
 
 function getRandomResults() {
-    getOrdIdResults("random");
+    getOrdIdResults(RANDOM_RESULTS_ID);
 }
 
 window.addEventListener("click", function(event) {
@@ -348,7 +401,7 @@ document.addEventListener("keydown", function(event) {
     }
     // Pressing enter will submit the form when focus is on the input
     if (event.key === "Enter") {
-        const ordinalInput = document.getElementById("ordinalInput")
+        const ordinalInput = document.getElementById("ordinalInput");
         if (document.activeElement === ordinalInput) {
             event.preventDefault();
             chooseOrdID();
@@ -363,5 +416,12 @@ window.onload = function() {
     const ordID = queryParams.get('ord_id');
     if (ordID) {
         getOrdIdResults(ordID);
+        return;
+    }
+    // Get results from tx_id=XXX
+    const txID = queryParams.get('tx_id');
+    if (txID) {
+        getTxIdResults(txID);
+        return;
     }
 };
