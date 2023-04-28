@@ -14,7 +14,7 @@ pub struct BigUintWrapper(pub BigUint);
 
 impl BigUintWrapper {
     pub fn new(bin_str: &str) -> Self {
-        let big_uint = binary_string_to_big_uint(s);
+        let big_uint = binary_string_to_big_uint(bin_str);
         BigUintWrapper(big_uint)
     }
 }
