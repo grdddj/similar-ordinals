@@ -19,7 +19,39 @@ def get_matches(
     with open(json_file) as f:
         data = orjson.loads(f.read())["data"]
 
-    return get_matches_from_data(data, ord_id, file_hash, top_n)
+    int_data = {k: int(v, 2) for k, v in data.items()}
+    return get_matches_from_int_data(int_data, ord_id, file_hash, top_n)
+
+
+def get_matches_from_int_data(
+    data: dict[str, int], ord_id: str | None, file_hash: str | None, top_n: int = 20
+) -> list[Match]:
+    if ord_id:
+        if ord_id not in data:
+            return []
+        file_hash_int = data[ord_id]
+    else:
+        assert file_hash is not None
+        file_hash_int = int(file_hash, 2)
+
+    hash_length = Config.HASH_SIZE**2
+
+    def match_generator() -> Iterator[tuple[str, int]]:
+        for file_name, hash_int in data.items():
+            # Comparing the string hashes by converting them to integers
+            # and counting the number of different bits
+            different_bit_int = file_hash_int ^ hash_int
+            different_bit_count = bin(different_bit_int).count("1")
+            same_bit_count = hash_length - different_bit_count
+            # Also accounting for inverse matches - e.g. 11111111 and 00000000
+            match_sum = max(same_bit_count, different_bit_count)
+            yield file_name, match_sum
+
+    best_matches = heapq.nlargest(top_n, match_generator(), key=lambda x: x[1])
+
+    return [
+        {"ord_id": ord_id, "match_sum": match_sum} for ord_id, match_sum in best_matches
+    ]
 
 
 def get_matches_from_data(

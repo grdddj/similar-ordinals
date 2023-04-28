@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import requests
+import requests  # type: ignore
 
 possible_image_formats = ["png", "webp", "jpeg", "svg", "gif"]
 base_url = "https://ordmempool.space/static/pictures/"

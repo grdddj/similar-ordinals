@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import json
+import time
 from datetime import datetime
 from pathlib import Path
-import time
 
 import requests  # type: ignore
-from requests.exceptions import HTTPError
+from requests.exceptions import HTTPError  # type: ignore
 
 from common import bytes_to_hash, content_md5_hash, get_logger
 from config import Config
@@ -25,7 +25,7 @@ new_hashes_file = HERE / "new_average_hashes.txt"
 last_checked_file = HERE / "last_checked_id.dat"
 
 try:
-    last_checked_id = int(last_checked_file.read_text())
+    last_checked_id: int | None = int(last_checked_file.read_text())
 except Exception as e:
     logger.exception(f"Could not read last_checked_id from file - {e}")
     last_checked_id = None
@@ -147,7 +147,9 @@ def process_batch(limit: int, from_number: int, to_number: int) -> None:
         # Save ord_data to db if not there already
         if ord_data_session.query(InscriptionModel).get(ord_id) is None:
             try:
-                inscr_model = create_inscription_model_from_api_data(entry, content_data)
+                inscr_model = create_inscription_model_from_api_data(
+                    entry, content_data
+                )
                 ord_data_session.add(inscr_model)
             except Exception as e:
                 logger.error(f"ERROR: could not save ord_data {ord_id} - {e}")
@@ -206,7 +208,7 @@ def main() -> None:
         except Exception as e:
             logger.exception(f"ERROR: {e}")
             continue
-    
+
     new_last_id = last_id + total_missing
     last_checked_file.write_text(str(new_last_id))
 

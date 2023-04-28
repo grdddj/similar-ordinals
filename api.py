@@ -15,7 +15,7 @@ from common import Match, bytes_to_hash, content_md5_hash, get_logger
 from config import Config
 from db_ord_data import InscriptionModel
 from db_similarity_index import SimilarityIndex
-from get_matches import get_matches_from_data
+from get_matches import get_matches_from_int_data
 from mempool import get_link_and_content_from_mempool
 from rust_server import get_matches_from_rust_server
 from update_data import (
@@ -47,10 +47,13 @@ RANDOM_ORD_ID = "random"
 
 # Storing the data globally, so it is immediately available for all requests
 with open(Config.AVERAGE_HASH_DB) as f:
-    average_hash_data: dict[str, str] = json.load(f)["data"]
-highest_id_we_have = max(int(k) for k in average_hash_data.keys())
+    # converting the keys to integers for quicker comparison (and smaller storage)
+    average_hash_int_data: dict[str, int] = {
+        k: int(v, 2) for k, v in json.load(f)["data"].items()
+    }
+highest_id_we_have = max(int(k) for k in average_hash_int_data.keys())
 logger.info(
-    f"We have {len(average_hash_data):_} entries - max is {highest_id_we_have:_}."
+    f"We have {len(average_hash_int_data):_} entries - max is {highest_id_we_have:_}."
 )
 
 
@@ -95,7 +98,7 @@ async def by_ord_id(request: Request, ord_id: Union[int, str], top_n: int = Quer
         )
         # Possibility to select a random one
         if ord_id == RANDOM_ORD_ID:
-            ord_id = random.choice(list(average_hash_data.keys()))
+            ord_id = random.choice(list(average_hash_int_data.keys()))
         # Check we have a valid int ord_id
         try:
             ord_id = int(ord_id)
@@ -132,15 +135,15 @@ def do_by_ord_id(ord_id: int, top_n: int = 20) -> list[dict]:
             for match_ord_id, match_sum in SimilarityIndex.list_by_id(ord_id)[:top_n]
         ]
     else:
-        if str(ord_id) not in average_hash_data:
+        if str(ord_id) not in average_hash_int_data:
             return do_by_ord_id_we_do_not_have(ord_id, top_n)
         else:
             try:
                 matches = get_matches_from_rust_server(ord_id, None)
             except Exception as e:
                 logger.error(f"Error from Rust server: {e}")
-                matches = get_matches_from_data(
-                    average_hash_data, str(ord_id), None, top_n
+                matches = get_matches_from_int_data(
+                    average_hash_int_data, str(ord_id), None, top_n
                 )
     # We must make sure that the requested ord_id is in the results
     # (it may not be, when there is a lot of duplicates)
@@ -256,7 +259,9 @@ def do_by_custom_file(file_bytes: bytes, top_n: int = 20) -> list[dict]:
         matches = get_matches_from_rust_server(None, file_hash)
     except Exception as e:
         logger.error(f"Error from Rust server: {e}")
-        matches = get_matches_from_data(average_hash_data, None, file_hash, top_n)
+        matches = get_matches_from_int_data(
+            average_hash_int_data, None, file_hash, top_n
+        )
     return [get_full_inscription_result(match) for match in matches[:top_n]]
 
 
