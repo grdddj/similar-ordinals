@@ -103,6 +103,7 @@ async def by_ord_id(request: Request, ord_id: Union[int, str], top_n: int = Quer
         try:
             ord_id = int(ord_id)
         except ValueError:
+            logger.error(f"ord_id must be an integer: {ord_id}")
             raise HTTPException(status_code=400, detail="ord_id must be an integer")
         result = result_by_ord_id(ord_id, top_n)
         logger.info(f"req_id: {request_id}: request finished")
@@ -194,6 +195,7 @@ async def by_tx_id(request: Request, tx_id: str, top_n: int = Query(20)):
         if len(tx_id) == 64 + 2:
             tx_id = tx_id[:-2]
         if len(tx_id) != 64:
+            logger.error(f"Tx_id is not 64 characters: {tx_id}")
             raise HTTPException(status_code=400, detail="tx_id must be 64 characters")
 
         # Try translating tx_id to ord_id
@@ -206,6 +208,7 @@ async def by_tx_id(request: Request, tx_id: str, top_n: int = Query(20)):
         # If we still do not have it, search in mempool
         mempool_link, content = get_link_and_content_from_mempool(tx_id)
         if not content:
+            logger.error(f"Could not find tx_id in mempool: {tx_id}")
             raise HTTPException(status_code=404, detail="tx_id not found")
 
         result = results_by_custom_file(content, top_n, tx_id)
